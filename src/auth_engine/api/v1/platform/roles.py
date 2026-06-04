@@ -17,6 +17,10 @@ from auth_engine.services.role_service import RoleService
 router = APIRouter()
 
 
+def serialize_role(r: RoleORM) -> RoleResponse:
+    return RoleResponse.model_validate(r)
+
+
 @router.get("/roles")
 async def list_roles(
     scope: RoleScope | None = None,
@@ -32,12 +36,6 @@ async def list_roles(
         
     result = await db.execute(query)
     roles = result.scalars().all()
-
-    def serialize_role(r: RoleORM) -> RoleResponse:
-        resp = RoleResponse.model_validate(r)
-        resp.permissions = [rp.permission.name for rp in r.permissions if rp.permission]
-        resp.permission_ids = [rp.permission.id for rp in r.permissions if rp.permission]
-        return resp
 
     return [serialize_role(role) for role in roles]
 
@@ -66,10 +64,7 @@ async def create_role(
 
     try:
         new_role = await role_service.create_role(data)
-        resp = RoleResponse.model_validate(new_role)
-        resp.permissions = []
-        resp.permission_ids = [p for p in data.permissions]
-        return resp
+        return serialize_role(new_role)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
@@ -87,15 +82,7 @@ async def update_role(
 
     try:
         role = await role_service.update_role(role_id, data)
-        resp = RoleResponse.model_validate(role)
-        if hasattr(role, "permissions"):
-            resp.permissions = [rp.permission.name for rp in role.permissions if rp.permission]
-            resp.permission_ids = [rp.permission.id for rp in role.permissions if rp.permission]
-        else:
-            resp.permissions = []
-            resp.permission_ids = []
-            
-        return resp
+        return serialize_role(role)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 

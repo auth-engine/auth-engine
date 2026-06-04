@@ -53,7 +53,7 @@ def upgrade() -> None:
         sa.Column("avatar_url", sa.String(length=500), nullable=True),
         sa.Column(
             "status",
-            sa.Enum("ACTIVE", "INACTIVE", "SUSPENDED", "PENDING_VERIFICATION", name="userstatus"),
+            sa.Enum("ACTIVE", "INACTIVE", "SUSPENDED", name="userstatus"),
             nullable=False,
         ),
         sa.Column("is_email_verified", sa.Boolean(), nullable=False),

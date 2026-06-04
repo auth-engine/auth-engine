@@ -35,8 +35,6 @@ class TenantResponse(TenantBase):
     created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime
-    owner: UserResponse | None = None
-    creator: UserResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -208,6 +208,7 @@ class RoleService:
             scope=data.scope,
             level=data.level,
         )
+        new_role.permissions = []  # Initialize empty to avoid lazy load on append
         self.user_repo.session.add(new_role)
         await self.user_repo.session.flush()
 
@@ -227,16 +228,31 @@ class RoleService:
 
             rp = RolePermissionORM(role_id=new_role.id, permission_id=perm_id)
             self.user_repo.session.add(rp)
+            # Add to the collection to keep it in sync
+            new_role.permissions.append(rp)
+
         await self.user_repo.session.commit()
-        return new_role
+        
+        # Re-fetch with all relationships loaded to avoid MissingGreenlet during serialization
+        refresh_query = (
+            select(RoleORM)
+            .where(RoleORM.id == new_role.id)
+            .options(joinedload(RoleORM.permissions).joinedload(RolePermissionORM.permission))
+        )
+        refresh_result = await self.user_repo.session.execute(refresh_query)
+        return refresh_result.unique().scalar_one()
 
     async def update_role(self, role_id: uuid.UUID, data: RoleUpdateRequest) -> RoleORM:
-        result = await self.user_repo.session.execute(select(RoleORM).where(RoleORM.id == role_id))
-        role = result.scalar_one_or_none()
+        result = await self.user_repo.session.execute(
+            select(RoleORM)
+            .where(RoleORM.id == role_id)
+            .options(joinedload(RoleORM.permissions))
+        )
+        role = result.unique().scalar_one_or_none()
         if not role:
             raise ValueError("Role not found")
             
-        if role.name in ("SUPER_ADMIN", "TENANT_OWNER"):
+        if role.name in ("SUPER_ADMIN", "PLATFORM_ADMIN", "TENANT_OWNER"):
             raise ValueError("Cannot modify system roles")
 
         if data.name is not None and data.name != role.name:
@@ -252,12 +268,10 @@ class RoleService:
             role.level = data.level
 
         if data.permissions is not None:
-            # Delete old permissions
-            await self.user_repo.session.execute(
-                select(RolePermissionORM).where(RolePermissionORM.role_id == role.id)
-            ) # wait we need a delete... simpler to get and delete
+            # Clear existing roles to synchronize ORM state
+            role.permissions = []
             
-            # Since ORM we can just remove them
+            # Delete old permissions from DB
             old_perms = await self.user_repo.session.execute(
                 select(RolePermissionORM).where(RolePermissionORM.role_id == role.id)
             )
@@ -280,9 +294,18 @@ class RoleService:
 
                 rp = RolePermissionORM(role_id=role.id, permission_id=perm_id)
                 self.user_repo.session.add(rp)
+                role.permissions.append(rp)
 
         await self.user_repo.session.commit()
-        return role
+        
+        # Re-fetch with all relationships loaded
+        refresh_query = (
+            select(RoleORM)
+            .where(RoleORM.id == role.id)
+            .options(joinedload(RoleORM.permissions).joinedload(RolePermissionORM.permission))
+        )
+        refresh_result = await self.user_repo.session.execute(refresh_query)
+        return refresh_result.unique().scalar_one()
 
     async def delete_role(self, role_id: uuid.UUID) -> None:
         result = await self.user_repo.session.execute(select(RoleORM).where(RoleORM.id == role_id))

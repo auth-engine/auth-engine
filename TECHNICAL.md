@@ -455,7 +455,7 @@ password_hash         : str | None           ← null for OAuth-only users
 first_name            : str | None
 last_name             : str | None
 avatar_url            : str | None
-status                : UserStatus           ← ACTIVE | INACTIVE | SUSPENDED | PENDING_VERIFICATION
+status                : UserStatus           ← ACTIVE | INACTIVE | SUSPENDED
 is_email_verified     : bool
 is_phone_verified     : bool
 mfa_enabled           : bool                 ← default False

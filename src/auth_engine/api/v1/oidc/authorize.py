@@ -225,8 +225,9 @@ async def authorize_submit(
             if not crypto.verify_password(password, str(user.password_hash)):
                 return show_error("Invalid email or password.")
 
-            if user.status != UserStatus.ACTIVE:
-                return show_error(f"Account is {user.status.value}. Please contact support.")
+            # User only Active will if email and phone verified
+            # if user.status != UserStatus.ACTIVE:
+            #     return show_error(f"Account is {user.status.value}. Please contact support.")
 
             code = await _issue_authorization_code(
                 redis_conn=redis_conn,

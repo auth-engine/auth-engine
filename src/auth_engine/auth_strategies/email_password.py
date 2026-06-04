@@ -104,7 +104,7 @@ class EmailPasswordStrategy(PasswordBasedStrategy):
             "username": user_data.get("username"),
             "first_name": user_data.get("first_name"),
             "last_name": user_data.get("last_name"),
-            "status": "pending_verification",
+            "status": "ACTIVE",
             "is_email_verified": False,
             "is_phone_verified": False,
             "auth_strategies": [self.name],

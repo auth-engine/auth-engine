@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -9,7 +10,7 @@ from auth_engine.core.security import security as security_utils
 from auth_engine.models import RoleORM, TenantORM, UserORM, UserRoleORM
 from auth_engine.models.tenant import TenantType
 from auth_engine.schemas.user import UserStatus
-
+from auth_engine.schemas.user import AuthStrategy
 logger = logging.getLogger(__name__)
 
 
@@ -22,22 +23,16 @@ async def seed_super_admin(db: AsyncSession) -> None:
     # ── Single query: fetch role + user + tenant + assignment together ───────
     # If all 4 exist and are linked, we're done in 1 round trip
     full_check = await db.execute(
-        select(
-            RoleORM,
-            UserORM,
-            TenantORM,
-            UserRoleORM,
-        )
-        .join(UserRoleORM, RoleORM.id == UserRoleORM.role_id)
-        .join(UserORM, UserORM.id == UserRoleORM.user_id)
-        .join(TenantORM, TenantORM.id == UserRoleORM.tenant_id)
+        select(RoleORM, UserORM, TenantORM)
+        .select_from(RoleORM)
+        .outerjoin(UserORM, UserORM.email == settings.SUPERADMIN_EMAIL)
+        .outerjoin(TenantORM, TenantORM.type == TenantType.PLATFORM)
         .where(RoleORM.name == "SUPER_ADMIN")
-        .where(TenantORM.type == TenantType.PLATFORM)
         .limit(1)
     )
     row = full_check.first()
 
-    if row:
+    if row and row.UserORM and row.TenantORM:
         logger.debug("Super admin fully seeded — skipping")
         return
 
@@ -46,6 +41,7 @@ async def seed_super_admin(db: AsyncSession) -> None:
     # ── Fetch only what's missing ────────────────────────────────────────────
     results = await db.execute(
         select(RoleORM, UserORM, TenantORM)
+        .select_from(RoleORM)
         .outerjoin(UserORM, UserORM.email == settings.SUPERADMIN_EMAIL)
         .outerjoin(TenantORM, TenantORM.type == TenantType.PLATFORM)
         .where(RoleORM.name == "SUPER_ADMIN")
@@ -65,12 +61,17 @@ async def seed_super_admin(db: AsyncSession) -> None:
     if not user:
         user = UserORM(
             email=settings.SUPERADMIN_EMAIL,
-            username="superadmin",
+            is_email_verified=True,
+            phone_number="+91 9999999999",
+            is_phone_verified=True,
+            username="super100",
             password_hash=security_utils.hash_password(settings.SUPERADMIN_PASSWORD),
             first_name="Super",
             last_name="Admin",
             status=UserStatus.ACTIVE,
-            is_email_verified=True,
+            auth_strategies=[AuthStrategy.EMAIL_PASSWORD],
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
         db.add(user)
         await db.flush()

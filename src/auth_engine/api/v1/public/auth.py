@@ -16,6 +16,7 @@ from auth_engine.schemas.mfa import MFAChallengeResponse
 from auth_engine.schemas.user import (
     PasswordResetConfirm,
     PasswordResetRequest,
+    PasswordUpdate,
     SetPassword,
     TokenRefresh,
     TokenRequest,
@@ -28,6 +29,8 @@ from auth_engine.services.audit_service import AuditService
 from auth_engine.services.auth_service import AuthService
 from auth_engine.services.session_service import SessionService
 from auth_engine.services.totp_service import TOTPService
+from sqlalchemy import select as sa_select
+from auth_engine.models import TenantAuthConfigORM
 
 router = APIRouter()
 
@@ -68,15 +71,13 @@ async def login(
     session_service = SessionService(redis_conn)
 
     try:
+
         user = await auth_service.authenticate_user(
             login_data, ip_address=request.client.host if request.client else None
         )
 
         # ── Tenant auth config gate ──────────────────────────────────────
         if login_data.tenant_id:
-            from sqlalchemy import select as sa_select
-
-            from auth_engine.models import TenantAuthConfigORM
 
             config_q = sa_select(TenantAuthConfigORM).where(
                 TenantAuthConfigORM.tenant_id == login_data.tenant_id
@@ -308,6 +309,29 @@ async def set_password(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
+@router.post("/update-password", status_code=status.HTTP_200_OK)
+async def update_password(
+    password_data: PasswordUpdate,
+    current_user: UserORM = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+    redis_conn: redis.Redis = Depends(get_redis),
+) -> dict[str, str]:
+    """
+    Allow an authenticated user to change their current password.
+    """
+    user_repo = UserRepository(db)
+    session_service = SessionService(redis_conn)
+    auth_service = AuthService(user_repo, session_service=session_service)
+
+    try:
+        await auth_service.change_password(
+            current_user, password_data.current_password, password_data.new_password
+        )
+        return {"message": "Password updated successfully."}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+
 @router.get("/verify-email")
 async def verify_email(
     token: str,
@@ -354,7 +378,7 @@ async def request_action_token(
     request_data: TokenRequest,
     db: AsyncSession = Depends(get_db),
     redis_conn: redis.Redis = Depends(get_redis),
-    current_user: UserORM = Depends(require_permission("auth.tokens.request")),
+    current_user: UserORM = Depends(get_current_active_user),
 ) -> dict[str, str]:
     """
     Generalized endpoint to request a token for various actions (resend verification, etc).

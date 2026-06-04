@@ -33,7 +33,7 @@ class UserORM(Base):
     # Status
     status: Mapped[UserStatus] = mapped_column(
         SQLEnum(UserStatus),
-        default=UserStatus.PENDING_VERIFICATION,
+        default=UserStatus.ACTIVE,
         nullable=False,
     )
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

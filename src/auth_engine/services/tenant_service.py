@@ -271,7 +271,7 @@ class TenantService:
     ) -> dict[str, str]:
         """
         Invite a user to a tenant with a specific role.
-        If user doesn't exist, register them with PENDING_VERIFICATION status.
+        If user doesn't exist, register them with ACTIVE status.
         Sends invitation email in both cases.
         """
         # 1. Verify actor has permission

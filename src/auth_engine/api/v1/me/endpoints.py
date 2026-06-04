@@ -58,8 +58,6 @@ async def get_my_tenants(
                 created_by=tenant.created_by,
                 created_at=tenant.created_at,
                 updated_at=tenant.updated_at,
-                owner=None,
-                creator=None,
             )
         )
 

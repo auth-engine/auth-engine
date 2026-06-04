@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from .rbac import UserRoleResponse
 
@@ -15,8 +15,6 @@ class UserStatus(str, Enum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
     SUSPENDED = "SUSPENDED"
-    PENDING_VERIFICATION = "PENDING_VERIFICATION"
-
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -84,8 +82,7 @@ class UserResponse(UserBase):
     last_login_at: datetime | None = None
     roles: list[UserRoleResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserLogin(BaseModel):

@@ -60,7 +60,7 @@ class AuthService:
             "password_hash": password_hash,
             "first_name": user_in.first_name,
             "last_name": user_in.last_name,
-            "status": UserStatus.PENDING_VERIFICATION,
+            "status": UserStatus.ACTIVE,
             "auth_strategies": [user_in.auth_strategy.value],
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
@@ -98,9 +98,10 @@ class AuthService:
             user.failed_login_attempts += 1
             await self.user_repo.session.commit()
             raise ValueError("Invalid email or password")
-
-        if user.status != UserStatus.ACTIVE:
-            raise ValueError("Account not activated", user.status.value)
+        
+        # User only Active will if email and phone verified
+        # if user.status != UserStatus.ACTIVE:
+        #     raise ValueError("Account not activated", user.status.value)
 
         # Update last login and reset failed attempts
         user.last_login_at = datetime.utcnow()
@@ -228,9 +229,7 @@ class AuthService:
             raise ValueError("User not found")
 
         user.is_email_verified = True
-        if user.status == UserStatus.PENDING_VERIFICATION:
-            user.status = UserStatus.ACTIVE
-
+       
         await self.user_repo.session.commit()
         return user
 
@@ -276,6 +275,23 @@ class AuthService:
         await self.user_repo.session.commit()
         logger.info(f"Password set for OAuth user {user.id}")
 
+    async def change_password(
+        self, user: UserORM, current_password: str, new_password: str
+    ) -> None:
+        """
+        Allow an authenticated user to change their existing password.
+        """
+        if not user.password_hash:
+            raise ValueError("No password set for this account. Use set-password instead.")
+
+        if not security.verify_password(current_password, str(user.password_hash)):
+            raise ValueError("Invalid current password")
+
+        user.password_hash = security.hash_password(new_password)
+        user.password_changed_at = datetime.utcnow()
+        await self.user_repo.session.commit()
+        logger.info(f"Password changed for user {user.id}")
+
     async def validate_password_reset_token(self, token: str) -> uuid.UUID:
         """
         Validate a password reset token and return the user_id.
@@ -308,10 +324,7 @@ class AuthService:
             return False
 
         user.is_phone_verified = True
-        # Optionally update status if it was pending
-        if user.status == UserStatus.PENDING_VERIFICATION and user.is_email_verified:
-            user.status = UserStatus.ACTIVE
-
+        
         await self.user_repo.session.commit()
         await self.session_service.redis.delete(key)
         return True
