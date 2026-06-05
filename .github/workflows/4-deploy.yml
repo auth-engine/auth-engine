@@ -1,15 +1,34 @@
-name: Register Deployment
+name: auth-engine · Register Production Deployment
 
+# Manual only for now. To automate on push to main later, uncomment:
+# on:
+#   push:
+#     branches:
+#       - main
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Branch, tag, or SHA to record as deployed
+        required: false
+        default: main
+        type: string
 
 jobs:
   deployment:
+    name: Register GitHub deployment for api.bestcrmhub.com
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
     steps:
-      - name: Create Deployment
+      - name: Checkout ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+
+      - name: Create deployment record
         uses: actions/github-script@v7
         with:
           script: |
@@ -27,6 +46,6 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: "success",
-              environment_url: "https://authengine-1-0-0.onrender.com/docs",
-              log_url: "https://authengine-1-0-0.onrender.com/docs"
+              environment_url: "https://api.bestcrmhub.com/docs",
+              log_url: "https://api.bestcrmhub.com/docs"
             });

@@ -1,4 +1,4 @@
-name: Tag the repo
+name: auth-engine · Create Version Tag
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   tag:
-    name: Create & Push Tag
+    name: Create and push git tag
     runs-on: ubuntu-latest
     permissions:
       contents: write

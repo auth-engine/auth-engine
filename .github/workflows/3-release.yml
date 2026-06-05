@@ -1,9 +1,11 @@
-name: Release
+name: auth-engine · Create GitHub Release
 
+# Manual only for now. To chain after image build later, uncomment:
+# on:
+#   workflow_run:
+#     workflows: ["auth-engine · Build and Push Docker Image"]
+#     types: [completed]
 on:
-  workflow_run:
-    workflows: ["Build & Push Image"]
-    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
@@ -18,34 +20,23 @@ on:
 
 jobs:
   release:
+    name: Publish GitHub release
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     permissions:
       contents: write
 
     steps:
-      - name: Resolve tag
-        id: resolve
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "TAG=${{ inputs.tag }}" >> $GITHUB_OUTPUT
-            echo "PREV=${{ inputs.previous-tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "TAG=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
-            echo "PREV=latest" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout code
+      - name: Checkout code at tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.resolve.outputs.TAG }}
+          ref: ${{ inputs.tag }}
           fetch-depth: 0
 
       - name: Generate changelog
         id: changelog
         run: |
-          PREV="${{ steps.resolve.outputs.PREV }}"
-          CURRENT="${{ steps.resolve.outputs.TAG }}"
+          PREV="${{ inputs.previous-tag }}"
+          CURRENT="${{ inputs.tag }}"
 
           if [ "$PREV" = "None" ] || [ "$PREV" = "latest" ]; then
             PREV=$(git tag --sort=-version:refname | grep -v "^${CURRENT}$" | head -n 1)
@@ -67,19 +58,18 @@ jobs:
       - name: Determine pre-release
         id: prerelease
         run: |
-          [[ "${{ steps.resolve.outputs.TAG }}" =~ -(rc|beta|alpha)\. ]] \
+          [[ "${{ inputs.tag }}" =~ -(rc|beta|alpha)\. ]] \
             && echo "VALUE=true" >> $GITHUB_OUTPUT \
             || echo "VALUE=false" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.resolve.outputs.TAG }}
-          name: Release ${{ steps.resolve.outputs.TAG }}
+          tag_name: ${{ inputs.tag }}
+          name: Release ${{ inputs.tag }}
           prerelease: ${{ steps.prerelease.outputs.VALUE }}
           body: |
             ## What's Changed
             ${{ steps.changelog.outputs.CHANGELOG }}
 
-            **Full Changelog:** ${{ steps.changelog.outputs.PREV }}...${{ steps.resolve.outputs.TAG }}
-
+            **Full Changelog:** ${{ steps.changelog.outputs.PREV }}...${{ inputs.tag }}
