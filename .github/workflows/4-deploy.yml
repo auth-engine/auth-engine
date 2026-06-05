@@ -16,7 +16,7 @@ on:
 
 jobs:
   deployment:
-    name: Register GitHub deployment for api.bestcrmhub.com
+    name: Register GitHub deployment for api.authengine.org
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -46,6 +46,6 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: "success",
-              environment_url: "https://api.bestcrmhub.com/docs",
-              log_url: "https://api.bestcrmhub.com/docs"
+              environment_url: "https://api.authengine.org/docs",
+              log_url: "https://api.authengine.org/docs"
             });

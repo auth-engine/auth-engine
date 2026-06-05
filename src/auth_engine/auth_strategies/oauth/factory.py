@@ -191,7 +191,7 @@ def _build_platform_strategy(provider: str) -> BaseOAuthStrategy:
             raise AuthenticationError(
                 "AUTHENGINE_BASE_URL is required. "
                 "Set it to the root URL of the remote AuthEngine instance "
-                "e.g. https://auth.company.com"
+                "e.g. https://api.authengine.org"
             )
         return AuthEngineOAuthStrategy(
             base_url=settings.AUTHENGINE_BASE_URL,

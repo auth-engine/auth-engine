@@ -5,6 +5,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from auth_engine.core.config import settings
 from auth_engine.models import RoleORM, TenantORM, UserORM, UserRoleORM
 from auth_engine.models.tenant import TenantType
 from auth_engine.repositories.user_repo import UserRepository
@@ -314,7 +315,7 @@ class TenantService:
                         <p>You've been added to <strong>{tenant.name}</strong>
                         with the role: <strong>{role_name}</strong></p>
                         <p>Log in to get started:</p>
-                        <p><a href="https://app.example.com">Open Dashboard</a></p>
+                        <p><a href="{settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else 'https://app.authengine.org'}">Open Dashboard</a></p>
                     </body>
                 </html>
                 """

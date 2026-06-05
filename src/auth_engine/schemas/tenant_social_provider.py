@@ -26,7 +26,7 @@ class TenantSocialProviderCreate(BaseModel):
     redirect_uri: str | None = None
 
     # For the authengine provider, oidc_discovery_url stores the remote base URL
-    # e.g. "https://auth.company.com"
+    # e.g. "https://api.authengine.org"
     oidc_discovery_url: str | None = None
 
     @model_validator(mode="after")
@@ -35,7 +35,7 @@ class TenantSocialProviderCreate(BaseModel):
             raise ValueError(
                 "oidc_discovery_url is required for the 'authengine' provider. "
                 "Set it to the base URL of the remote AuthEngine instance, "
-                "e.g. https://auth.company.com"
+                "e.g. https://api.authengine.org"
             )
         return self
 

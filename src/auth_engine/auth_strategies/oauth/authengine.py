@@ -19,7 +19,7 @@ Use cases:
     - Multi-tenant setups where one AuthEngine federates into another
 
 Configuration (env vars — same pattern as Google):
-    AUTHENGINE_BASE_URL      = https://auth.company.com
+    AUTHENGINE_BASE_URL      = https://api.authengine.org
     AUTHENGINE_CLIENT_ID     = <client_id from /oidc/register on remote>
     AUTHENGINE_CLIENT_SECRET = <client_secret from /oidc/register on remote>
     AUTHENGINE_REDIRECT_URI  = http://localhost:8000/api/v1/auth/oauth/authengine/callback
@@ -49,7 +49,7 @@ class AuthEngineOAuthStrategy(BaseOAuthStrategy):
 
     Example:
         strategy = AuthEngineOAuthStrategy(
-            base_url="https://auth.company.com",
+            base_url="https://api.authengine.org",
             client_id="abc123",
             client_secret="secret",
             redirect_uri="http://localhost:8000/api/v1/auth/oauth/authengine/callback",
@@ -68,7 +68,7 @@ class AuthEngineOAuthStrategy(BaseOAuthStrategy):
         """
         Args:
             base_url:      Root URL of the remote AuthEngine instance.
-                           e.g. "https://auth.company.com" or "http://localhost:8000"
+                           e.g. "https://api.authengine.org" or "http://localhost:8000"
             client_id:     OIDC client_id obtained from POST /oidc/register on the remote.
             client_secret: OIDC client_secret from the same registration.
             redirect_uri:  Callback URL on THIS AuthEngine instance.

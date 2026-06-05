@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Super Admin Bootstrap
     # Defaulting to values that should be changed in .env
-    SUPERADMIN_EMAIL: str = "admin@authengine.com"
+    SUPERADMIN_EMAIL: str = "admin@authengine.org"
     SUPERADMIN_PASSWORD: str = "ChangeThisStrongPassword123!"
 
     # Security
@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     EMAIL_PROVIDER_API_KEY: str = Field(
         default="", description="API Key for the configured email provider"
     )
-    EMAIL_SENDER: str = Field(default="noreply@authengine.com", description="Default email sender")
+    EMAIL_SENDER: str = Field(default="noreply@authengine.org", description="Default email sender")
 
     # SMS Settings
     SMS_PROVIDER: str = "twilio"
