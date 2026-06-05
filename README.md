@@ -13,9 +13,18 @@ Backend API for **AuthEngine** — FastAPI IAM, multi-tenancy, OIDC provider, an
 | Deployment | [deployment.md](https://github.com/Q-Niranjan/auth-engine-infra/blob/main/docs/deployment.md) |
 | Security | [security-overview.md](https://github.com/Q-Niranjan/auth-engine-infra/blob/main/docs/security-overview.md) |
 
+## Docker
+
+Dockerfile only — compose files live in **[auth-engine-infra/compose](https://github.com/Q-Niranjan/auth-engine-infra/tree/main/compose)**.
+
+```bash
+cd auth-engine-infra/compose
+docker compose up -d --build
+```
+
 ## Related repositories
 
 | Repository | Role |
 |------------|------|
 | [auth-engine-frontend](https://github.com/Q-Niranjan/auth-engine-frontend) | Admin dashboard |
-| [auth-engine-infra](https://github.com/Q-Niranjan/auth-engine-infra) | Terraform and canonical docs |
+| [auth-engine-infra](https://github.com/Q-Niranjan/auth-engine-infra) | Terraform, Docker Compose, docs |
