@@ -33,6 +33,10 @@ docker compose up -d --build
 
 Image: `qniranjan01/authengine` on Docker Hub (set `DOCKERHUB_USERNAME=qniranjan01` in GitHub Actions secrets).
 
+## Contributing
+
+See [Contributing](https://docs.authengine.org/contributing/) or [CONTRIBUTING.md](CONTRIBUTING.md). Report security issues per [Security Policy](https://docs.authengine.org/security-policy/) — not via public issues.
+
 ## Related repositories
 
 | Repository | Role |

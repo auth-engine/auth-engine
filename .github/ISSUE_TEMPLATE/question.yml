@@ -1,0 +1,40 @@
+name: Question
+description: Ask for help using or integrating AuthEngine
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check [docs.authengine.org](https://docs.authengine.org) first — especially [Quick Start](https://docs.authengine.org/quick-start/) and [OAuth2 / OIDC](https://docs.authengine.org/oauth2-oidc-guides/).
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Local development / Docker Compose
+        - Production deployment
+        - OAuth2 / OIDC integration
+        - Multi-tenancy / RBAC
+        - API usage
+        - Dashboard
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      placeholder: How do I register an OIDC client for a third-party app?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: What you tried already
+      description: Docs read, commands run, errors seen (redact secrets)
+    validations:
+      required: false

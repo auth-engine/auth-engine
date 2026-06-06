@@ -1,0 +1,76 @@
+name: Bug report
+description: Something is broken or not working as documented
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please search [existing issues](https://github.com/auth-engine/auth-engine/issues) first.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - auth-engine (API / backend)
+        - auth-engine-dashboard (admin UI)
+        - auth-engine-infra (compose / terraform / docs)
+        - Production deployment
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Clear description of the bug
+      placeholder: When I log in with MFA enabled, the session redirects to /login in a loop...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the behavior
+      placeholder: |
+        1. docker compose up (auth-engine-infra/compose)
+        2. Open http://localhost:3000/login
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker version, browser, API image tag, or production host
+      placeholder: Ubuntu 24.04, Docker 27.x, auth-engine tag 1.0.0, local compose
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Redact secrets, tokens, and passwords
+      placeholder: Paste relevant API logs or browser console output
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have redacted secrets and personal data from this report
+          required: true
+        - label: I read CONTRIBUTING.md and tested on main or latest release
+          required: false

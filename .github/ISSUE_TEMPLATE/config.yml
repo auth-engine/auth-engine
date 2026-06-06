@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://docs.authengine.org
+    about: Guides for quick start, deployment, API, and OAuth/OIDC
+  - name: Security report
+    url: https://docs.authengine.org/security-policy/
+    about: Report vulnerabilities privately — do not open a public issue
