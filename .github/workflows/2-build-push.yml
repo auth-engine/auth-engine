@@ -1,21 +1,33 @@
 name: auth-engine · Build and Push Docker Image
 
-# Manual only for now. To automate on tag push later, uncomment:
-# on:
-#   push:
-#     tags:
-#       - "v*.*.*"
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: Tag to build (e.g. v1.0.0)
+      ref_type:
+        description: Build source type
+        required: true
+        type: choice
+        options:
+          - branch
+          - tag
+        default: branch
+      git_ref:
+        description: Branch or tag name (e.g. main, v1.0.0)
+        required: true
+        type: string
+        default: main
+      docker_image:
+        description: Docker image name (e.g. qniranjan01/authengine). Leave blank to use DOCKERHUB_USERNAME/authengine
+        required: false
+        type: string
+        default: ""
+      docker_tag:
+        description: Docker image tag to push (e.g. 1.0.0, latest)
         required: true
         type: string
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/authengine
 
 jobs:
   build:
@@ -25,15 +37,23 @@ jobs:
       contents: read
       packages: write
 
-    outputs:
-      image_tag: ${{ steps.meta.outputs.version }}
-      image_digest: ${{ steps.build.outputs.digest }}
-
     steps:
-      - name: Checkout code at tag
+      - name: Resolve image name
+        id: image
+        run: |
+          if [ -n "${{ inputs.docker_image }}" ]; then
+            IMAGE="${{ inputs.docker_image }}"
+          else
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/authengine"
+          fi
+          echo "name=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "tag=${{ inputs.docker_tag }}" >> "$GITHUB_OUTPUT"
+          echo "full=${IMAGE}:${{ inputs.docker_tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ inputs.git_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -45,17 +65,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}},value=${{ inputs.tag }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
-            type=semver,pattern={{major}},value=${{ inputs.tag }}
-            type=sha,prefix=sha-
-
       - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v5
@@ -63,8 +72,7 @@ jobs:
           context: .
           dockerfile: Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.image.outputs.full }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
@@ -73,10 +81,11 @@ jobs:
         run: |
           echo "## Image Built & Pushed to Docker Hub" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** \`${{ inputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Source:** \`${{ inputs.ref_type }}:${{ inputs.git_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.image.outputs.full }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Pull Command" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ steps.image.outputs.full }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

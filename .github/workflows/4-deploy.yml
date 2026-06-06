@@ -1,10 +1,5 @@
 name: auth-engine · Register Production Deployment
 
-# Manual only for now. To automate on push to main later, uncomment:
-# on:
-#   push:
-#     branches:
-#       - main
 on:
   workflow_dispatch:
     inputs:

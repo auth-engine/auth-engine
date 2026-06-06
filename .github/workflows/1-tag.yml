@@ -79,7 +79,7 @@ jobs:
 
       - name: Summary
         run: |
-          echo "##ag Created" >> $GITHUB_STEP_SUMMARY
+          echo "## Tag Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**New Tag:** \`${{ inputs.new-tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Previous Tag:** \`${{ inputs.previous-tag }}\`" >> $GITHUB_STEP_SUMMARY

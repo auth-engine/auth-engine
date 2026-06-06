@@ -31,7 +31,7 @@ cd auth-engine-infra/compose
 docker compose up -d --build
 ```
 
-Image: `qniranjan01/authengine` on Docker Hub (set `DOCKERHUB_USERNAME=qniranjan01` in GitHub Actions secrets).
+Pre-built production images and CI/CD: [Deployment guide](https://docs.authengine.org/deployment/).
 
 ## Contributing
 
