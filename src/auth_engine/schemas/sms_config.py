@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class SMSProviderType(str, Enum):
     TWILIO = "twilio"
+    ANDROID_GATEWAY = "android_gateway"
     CONSOLE = "console"
 
 

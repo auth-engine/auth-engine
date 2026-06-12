@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="", case_sensitive=True, extra="ignore"
+        env_file=".env.local", env_prefix="", case_sensitive=True, extra="ignore"
     )
 
     # Application
@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
     APP_URL: str = "http://localhost:3000"
+    # Public URL of the dashboard / frontend used to build user-facing email links
+    # (password reset, etc). Falls back to APP_URL when unset.
+    DASHBOARD_URL: str = "http://localhost:3000"
 
     # Super Admin Bootstrap
     # Defaulting to values that should be changed in .env
@@ -71,19 +74,45 @@ class Settings(BaseSettings):
     SESSION_TIMEOUT_MINUTES: int = 60
 
     # Email Settings
-    EMAIL_PROVIDER: str = "sendgrid"
+    EMAIL_PROVIDER: str = "ses"
     EMAIL_PROVIDER_API_KEY: str = Field(
-        default="", description="API Key for the configured email provider"
+        default="",
+        description=(
+            "Email provider credential. For SendGrid: the API key. For SES: optional "
+            '"AWS_ACCESS_KEY_ID:AWS_SECRET_ACCESS_KEY" — leave blank to use the IAM role / '
+            "default boto3 credential chain."
+        ),
     )
-    EMAIL_SENDER: str = Field(default="noreply@authengine.org", description="Default email sender")
+    EMAIL_SENDER: str = Field(
+        default="noreply@authengine.org", description="Default email sender (SES verified identity)"
+    )
+
+    # AWS (used by the SES email provider)
+    AWS_REGION: str = Field(default="ap-south-1", description="AWS region for SES")
+
+    # WebAuthn / Passkeys
+    # Relying Party ID — use the registrable parent domain (e.g. authengine.org) so
+    # passkeys work across app.* and auth.* subdomains. Empty -> derived from APP_URL host.
+    WEBAUTHN_RP_ID: str = Field(default="", description="WebAuthn Relying Party ID")
 
     # SMS Settings
-    SMS_PROVIDER: str = "twilio"
+    SMS_PROVIDER: str = "android_gateway"
     SMS_PROVIDER_API_KEY: str = Field(
-        default="", description="API Key or Secret for the configured SMS provider"
+        default="", description="API Key or Secret for the configured SMS provider (e.g. Twilio)"
     )
     SMS_PROVIDER_ACCOUNT_SID: str = Field(default="", description="Account SID for Twilio if used")
     SMS_SENDER: str = Field(default="+1234567890", description="Default SMS sender number")
+
+    # Android SMS Gateway (phone + SIM as the SMS gateway)
+    SMS_GATEWAY_URL: str = Field(
+        default="",
+        description=(
+            "Base URL of the Android SMS Gateway app. Local: http://<phone-ip>:8080 ; "
+            "Cloud: https://api.sms-gate.app/3rdparty/v1"
+        ),
+    )
+    SMS_GATEWAY_USERNAME: str = Field(default="", description="Android SMS Gateway basic-auth user")
+    SMS_GATEWAY_PASSWORD: str = Field(default="", description="Android SMS Gateway basic-auth pass")
 
     # OAuth Settings
     GOOGLE_CLIENT_ID: str = Field(default="", description="Google OAuth Client ID")

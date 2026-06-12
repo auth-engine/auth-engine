@@ -1,6 +1,7 @@
 import logging
 
 from auth_engine.external_services.sms.base import SMSProvider, SMSProviderConfig
+from auth_engine.external_services.sms.providers.android_gateway import AndroidGatewaySMSProvider
 from auth_engine.external_services.sms.providers.console import ConsoleSMSProvider
 from auth_engine.external_services.sms.providers.twilio import TwilioSMSProvider
 
@@ -14,6 +15,9 @@ class SMSServiceFactory:
 
         if provider_type == "twilio":
             return TwilioSMSProvider(config)
+
+        if provider_type == "android_gateway":
+            return AndroidGatewaySMSProvider(config)
 
         # Add other providers here (SNS, MessageBird, etc.)
 

@@ -77,7 +77,7 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
-# OIDC spec requires discovery at /.well-known/ — mounted at the app root (no API prefix)
+# # OIDC spec requires discovery at /.well-known/ — mounted at the app root (no API prefix)
 app.include_router(well_known_router, prefix="/.well-known", tags=["oidc"])
 
 if __name__ == "__main__":

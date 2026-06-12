@@ -171,9 +171,10 @@ class AuthService:
         try:
             email_service = await self.email_resolver.resolve(target_tenant)
 
-            app_url = getattr(settings, "APP_URL", "http://localhost:8000")
-            api_prefix = settings.API_V1_PREFIX
-            reset_link = f"{app_url}{api_prefix}/auth/password-reset/confirm?token={reset_token}"
+            dashboard_url = getattr(settings, "DASHBOARD_URL", None) or getattr(
+                settings, "APP_URL", "http://localhost:3000"
+            )
+            reset_link = f"{dashboard_url.rstrip('/')}/reset-password?token={reset_token}"
 
             subject = "Password Reset Request"
             html_content = self._render_template(
@@ -364,9 +365,10 @@ class AuthService:
 
         try:
             email_service = await self.email_resolver.resolve(target_tenant)
-            app_url = getattr(settings, "APP_URL", "http://localhost:8000")
-            api_prefix = settings.API_V1_PREFIX
-            verify_link = f"{app_url}{api_prefix}/auth/verify-email?token={token}"
+            dashboard_url = getattr(settings, "DASHBOARD_URL", None) or getattr(
+                settings, "APP_URL", "http://localhost:3000"
+            )
+            verify_link = f"{dashboard_url.rstrip('/')}/verify-email?token={token}"
 
             subject = "Verify Your Email"
             html_content = self._render_template(
@@ -417,7 +419,7 @@ class AuthService:
             if success:
                 logger.info(f"Verification SMS sent successfully to {phone}")
             else:
-                logger.error(f"Twilio failed to send SMS to {phone}")
+                logger.error(f"SMS provider failed to send SMS to {phone}")
 
         except Exception as e:
             logger.error(f"Failed to send verification SMS: {e}")

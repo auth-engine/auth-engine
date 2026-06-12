@@ -3,6 +3,7 @@ import logging
 from auth_engine.external_services.email.base import EmailProvider, EmailProviderConfig
 from auth_engine.external_services.email.providers.console import ConsoleEmailProvider
 from auth_engine.external_services.email.providers.sendgrid import SendGridEmailProvider
+from auth_engine.external_services.email.providers.ses import SESEmailProvider
 from auth_engine.models.email_config import EmailProviderType
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,10 @@ class EmailServiceFactory:
         if provider_type == EmailProviderType.SENDGRID.value or provider_type == "sendgrid":
             return SendGridEmailProvider(config)
 
-        # Add other providers here (SES, SMTP)
+        if provider_type == EmailProviderType.SES.value or provider_type == "ses":
+            return SESEmailProvider(config)
+
+        # Add other providers here (SMTP)
 
         logger.warning(f"Unknown provider type: {config.provider_type}. Falling back to Console.")
         return ConsoleEmailProvider()

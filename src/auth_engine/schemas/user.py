@@ -57,6 +57,10 @@ class PasswordResetConfirm(BaseModel):
     confirm_password: str = Field(..., min_length=8, max_length=100)
 
 
+class EmailVerificationConfirm(BaseModel):
+    token: str
+
+
 class SetPassword(BaseModel):
     new_password: str = Field(..., min_length=8, max_length=100)
     confirm_password: str = Field(..., min_length=8, max_length=100)

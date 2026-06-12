@@ -14,6 +14,7 @@ from auth_engine.models import UserORM
 from auth_engine.repositories.user_repo import UserRepository
 from auth_engine.schemas.mfa import MFAChallengeResponse
 from auth_engine.schemas.user import (
+    EmailVerificationConfirm,
     PasswordResetConfirm,
     PasswordResetRequest,
     PasswordUpdate,
@@ -338,12 +339,29 @@ async def verify_email(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
     """
-    Verify user email with token.
+    Verify user email with token (query param).
     """
     user_repo = UserRepository(db)
     auth_service = AuthService(user_repo)
     try:
         await auth_service.verify_email(token)
+        return {"message": "Email verified successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+
+@router.post("/verify-email")
+async def verify_email_post(
+    payload: EmailVerificationConfirm,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    """
+    Verify user email with token (JSON body) — used by the dashboard.
+    """
+    user_repo = UserRepository(db)
+    auth_service = AuthService(user_repo)
+    try:
+        await auth_service.verify_email(payload.token)
         return {"message": "Email verified successfully"}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e

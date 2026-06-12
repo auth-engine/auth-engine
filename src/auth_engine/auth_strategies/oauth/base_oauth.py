@@ -51,6 +51,7 @@ class BaseOAuthStrategy(TokenBasedStrategy):
             client_id=self.client_id,
             client_secret=self.client_secret,
             redirect_uri=self.redirect_uri,
+            verify=False, #TODO: remove in production
         )
 
     async def get_authorization_url(self, state: str, tenant_id: str | None = None) -> str:
@@ -114,7 +115,7 @@ class BaseOAuthStrategy(TokenBasedStrategy):
         Returns:
             Raw profile data from provider (provider-specific format)
         """
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client: #TODO: remove  verify false in production
             try:
                 response = await client.get(
                     self.USERINFO_URL,

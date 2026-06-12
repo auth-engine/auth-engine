@@ -34,7 +34,11 @@ from auth_engine.core.config import settings
 
 
 def _rp_id() -> str:
-    """Derive Relying Party ID from APP_URL (host only, no port for prod)."""
+    """Relying Party ID. Prefers WEBAUTHN_RP_ID; falls back to the APP_URL host."""
+    configured = getattr(settings, "WEBAUTHN_RP_ID", "")
+    if configured:
+        return configured
+
     from urllib.parse import urlparse
 
     url = getattr(settings, "APP_URL", "http://localhost:8000")
@@ -215,8 +219,13 @@ class WebAuthnStrategy:
 
 
 def _get_expected_origin() -> str:
-    """Return the expected RP origin (scheme + host, no trailing slash)."""
-    url = getattr(settings, "APP_URL", "http://localhost:8000")
+    """Expected ceremony origin — the frontend where passkeys are used.
+
+    Prefers DASHBOARD_URL (the dashboard origin) and falls back to APP_URL.
+    """
+    url = getattr(settings, "DASHBOARD_URL", None) or getattr(
+        settings, "APP_URL", "http://localhost:8000"
+    )
     from urllib.parse import urlparse
 
     p = urlparse(url)
