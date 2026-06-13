@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  lint:
-    name: Lint and typecheck
+  ci:
+    name: Lint, typecheck, and Docker build
     runs-on: ubuntu-latest
 
     steps:
@@ -35,13 +35,6 @@ jobs:
         run: uv run mypy src
         env:
           PYTHONPATH: src
-
-  docker:
-    name: Docker build (no push)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
 
       - uses: docker/setup-buildx-action@v3
 
