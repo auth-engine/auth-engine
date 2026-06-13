@@ -3,8 +3,6 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, EmailStr
-from auth_engine.schemas.user import UserResponse
-
 
 
 class TenantType(str, Enum):
@@ -26,8 +24,6 @@ class TenantCreate(TenantBase):
 
 class TenantUpdate(TenantBase):
     pass
-
-
 
 
 class TenantResponse(TenantBase):

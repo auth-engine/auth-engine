@@ -10,8 +10,8 @@ try:
     import boto3
     from botocore.exceptions import BotoCoreError, ClientError
 except ImportError:
-    boto3 = None
-    BotoCoreError = ClientError = Exception
+    boto3 = None  # type: ignore
+    BotoCoreError = ClientError = Exception  # type: ignore
     logger.warning("boto3 not installed. SESEmailProvider will not function correctly.")
 
 
@@ -40,7 +40,7 @@ class SESEmailProvider(EmailProvider):
         if self._access_key and self._secret_key:
             kwargs["aws_access_key_id"] = self._access_key
             kwargs["aws_secret_access_key"] = self._secret_key
-        return boto3.client("ses", **kwargs)
+        return boto3.client("ses", **kwargs)  # type: ignore[call-overload]
 
     def _send_sync(self, to_emails: list[str], subject: str, html_content: str) -> bool:
         client = self._build_client()

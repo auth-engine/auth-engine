@@ -10,7 +10,12 @@ from auth_engine.models import RoleORM, TenantORM, UserORM
 from auth_engine.models.role import RoleScope
 from auth_engine.models.tenant import TenantType
 from auth_engine.repositories.user_repo import UserRepository
-from auth_engine.schemas.rbac import RoleAssignment, RoleResponse, RoleCreateRequest, RoleUpdateRequest
+from auth_engine.schemas.rbac import (
+    RoleAssignment,
+    RoleCreateRequest,
+    RoleResponse,
+    RoleUpdateRequest,
+)
 from auth_engine.services.audit_service import AuditService
 from auth_engine.services.role_service import RoleService
 
@@ -33,7 +38,7 @@ async def list_roles(
     query = select(RoleORM)
     if scope:
         query = query.where(RoleORM.scope == scope)
-        
+
     result = await db.execute(query)
     roles = result.scalars().all()
 
@@ -47,6 +52,7 @@ async def list_permissions(
 ) -> list[dict]:
     """Retrieve all the valid roles/permissions available to build roles upon."""
     from auth_engine.models import PermissionORM
+
     res = await db.execute(select(PermissionORM))
     perms = res.scalars().all()
     return [{"id": str(p.id), "name": p.name, "description": p.description} for p in perms]

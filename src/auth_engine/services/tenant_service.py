@@ -307,6 +307,11 @@ class TenantService:
             try:
                 email_service = await email_service_resolver.resolve(tenant_id)
                 subject = f"You've been added to {tenant.name}"
+                dashboard_url = (
+                    settings.CORS_ORIGINS[0]
+                    if settings.CORS_ORIGINS
+                    else "https://app.authengine.org"
+                )
                 html_content = f"""
                 <html>
                     <body>
@@ -315,7 +320,7 @@ class TenantService:
                         <p>You've been added to <strong>{tenant.name}</strong>
                         with the role: <strong>{role_name}</strong></p>
                         <p>Log in to get started:</p>
-                        <p><a href="{settings.CORS_ORIGINS[0] if settings.CORS_ORIGINS else 'https://app.authengine.org'}">Open Dashboard</a></p>
+                        <p><a href="{dashboard_url}">Open Dashboard</a></p>
                     </body>
                 </html>
                 """

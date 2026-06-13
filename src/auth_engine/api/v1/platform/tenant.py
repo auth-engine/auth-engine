@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from auth_engine.api.dependencies.deps import get_audit_service, get_db
 from auth_engine.api.dependencies.rbac import check_platform_permission
@@ -12,7 +13,6 @@ from auth_engine.schemas.tenant import TenantCreate, TenantResponse, TenantUpdat
 from auth_engine.schemas.tenant_auth_config import DEFAULT_ALLOWED_METHODS, DEFAULT_PASSWORD_POLICY
 from auth_engine.services.audit_service import AuditService
 from auth_engine.services.tenant_service import TenantService
-from sqlalchemy.orm import joinedload
 
 router = APIRouter()
 
@@ -54,8 +54,6 @@ async def create_tenant(
     await db.commit()
 
     return TenantResponse.model_validate(tenant)
-
-
 
 
 @router.get("/tenants", response_model=list[TenantResponse])

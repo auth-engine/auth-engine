@@ -3,14 +3,14 @@ import uuid
 import redis.asyncio as redis
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from sqlalchemy import select as sa_select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth_engine.api.dependencies.auth_deps import get_current_active_user
 from auth_engine.api.dependencies.deps import get_audit_service, get_db
-from auth_engine.api.dependencies.rbac import require_permission
 from auth_engine.core.config import settings
 from auth_engine.core.redis import get_redis
-from auth_engine.models import UserORM
+from auth_engine.models import TenantAuthConfigORM, UserORM
 from auth_engine.repositories.user_repo import UserRepository
 from auth_engine.schemas.mfa import MFAChallengeResponse
 from auth_engine.schemas.user import (
@@ -30,8 +30,6 @@ from auth_engine.services.audit_service import AuditService
 from auth_engine.services.auth_service import AuthService
 from auth_engine.services.session_service import SessionService
 from auth_engine.services.totp_service import TOTPService
-from sqlalchemy import select as sa_select
-from auth_engine.models import TenantAuthConfigORM
 
 router = APIRouter()
 
@@ -66,20 +64,18 @@ async def login(
     db: AsyncSession = Depends(get_db),
     redis_conn: redis.Redis = Depends(get_redis),
     audit_service: AuditService = Depends(get_audit_service),
-) -> UserLoginResponse | MFAChallengeResponse:
+) -> UserLoginResponse | MFAChallengeResponse | JSONResponse:
     user_repo = UserRepository(db)
     auth_service = AuthService(user_repo)
     session_service = SessionService(redis_conn)
 
     try:
-
         user = await auth_service.authenticate_user(
             login_data, ip_address=request.client.host if request.client else None
         )
 
         # ── Tenant auth config gate ──────────────────────────────────────
         if login_data.tenant_id:
-
             config_q = sa_select(TenantAuthConfigORM).where(
                 TenantAuthConfigORM.tenant_id == login_data.tenant_id
             )

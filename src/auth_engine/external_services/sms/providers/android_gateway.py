@@ -28,7 +28,9 @@ class AndroidGatewaySMSProvider(SMSProvider):
     """
 
     def __init__(self, config: SMSProviderConfig) -> None:
-        self.base_url = (config.account_sid or getattr(settings, "SMS_GATEWAY_URL", "")).rstrip("/")
+        self.base_url = str(config.account_sid or getattr(settings, "SMS_GATEWAY_URL", "")).rstrip(
+            "/"
+        )
 
         username: str | None = None
         password: str | None = None

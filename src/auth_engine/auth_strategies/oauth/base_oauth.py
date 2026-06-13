@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 import httpx
-from authlib.integrations.httpx_client import AsyncOAuth2Client
+from authlib.integrations.httpx_client import AsyncOAuth2Client  # type: ignore[import-untyped]
 
 from auth_engine.auth_strategies.base import TokenBasedStrategy
 from auth_engine.core.exceptions import AuthenticationError
@@ -51,7 +51,7 @@ class BaseOAuthStrategy(TokenBasedStrategy):
             client_id=self.client_id,
             client_secret=self.client_secret,
             redirect_uri=self.redirect_uri,
-            verify=False, #TODO: remove in production
+            verify=False,  # TODO: remove in production
         )
 
     async def get_authorization_url(self, state: str, tenant_id: str | None = None) -> str:
@@ -115,7 +115,9 @@ class BaseOAuthStrategy(TokenBasedStrategy):
         Returns:
             Raw profile data from provider (provider-specific format)
         """
-        async with httpx.AsyncClient(verify=False) as client: #TODO: remove  verify false in production
+        async with httpx.AsyncClient(
+            verify=False
+        ) as client:  # TODO: remove  verify false in production
             try:
                 response = await client.get(
                     self.USERINFO_URL,

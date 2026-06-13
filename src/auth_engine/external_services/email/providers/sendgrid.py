@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient  # type: ignore[import-untyped]
+from sendgrid.helpers.mail import Mail  # type: ignore[import-untyped]
 
 from auth_engine.external_services.email.base import EmailProvider, EmailProviderConfig
 

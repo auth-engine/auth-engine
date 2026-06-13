@@ -6,7 +6,7 @@ from auth_engine.external_services.sms.base import SMSProvider, SMSProviderConfi
 logger = logging.getLogger(__name__)
 
 try:
-    from twilio.rest import Client
+    from twilio.rest import Client  # type: ignore[import-untyped]
 except ImportError:
     Client = None
     logger.warning("Twilio SDK not installed. TwilioSMSProvider will not function correctly.")

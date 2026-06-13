@@ -36,9 +36,7 @@ api_router.include_router(me.mfa.router, prefix="/me/mfa", tags=["mfa"])
 
 # Platform Management (Super Admin Scope)
 api_router.include_router(platform.user.router, prefix="/platform", tags=["platform-users"])
-api_router.include_router(
-    platform.tenant.router, prefix="/platform", tags=["platform-tenants"]
-)
+api_router.include_router(platform.tenant.router, prefix="/platform", tags=["platform-tenants"])
 api_router.include_router(platform.roles.router, prefix="/platform", tags=["platform-roles"])
 api_router.include_router(platform.audit.router, prefix="/platform", tags=["platform-audit"])
 api_router.include_router(

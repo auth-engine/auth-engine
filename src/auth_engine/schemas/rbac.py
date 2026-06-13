@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
-from typing import Any
 
 
 class RoleScope(str, Enum):
@@ -55,7 +55,7 @@ class UserRoleResponse(BaseModel):
 
 class RoleAssignment(BaseModel):
     role_name: str
-    
+
 
 class RoleCreateRequest(BaseModel):
     name: str

@@ -98,7 +98,7 @@ class AuthService:
             user.failed_login_attempts += 1
             await self.user_repo.session.commit()
             raise ValueError("Invalid email or password")
-        
+
         # User only Active will if email and phone verified
         # if user.status != UserStatus.ACTIVE:
         #     raise ValueError("Account not activated", user.status.value)
@@ -171,8 +171,9 @@ class AuthService:
         try:
             email_service = await self.email_resolver.resolve(target_tenant)
 
-            dashboard_url = getattr(settings, "DASHBOARD_URL", None) or getattr(
-                settings, "APP_URL", "http://localhost:3000"
+            dashboard_url = str(
+                getattr(settings, "DASHBOARD_URL", None)
+                or getattr(settings, "APP_URL", "http://localhost:3000")
             )
             reset_link = f"{dashboard_url.rstrip('/')}/reset-password?token={reset_token}"
 
@@ -230,7 +231,7 @@ class AuthService:
             raise ValueError("User not found")
 
         user.is_email_verified = True
-       
+
         await self.user_repo.session.commit()
         return user
 
@@ -325,7 +326,7 @@ class AuthService:
             return False
 
         user.is_phone_verified = True
-        
+
         await self.user_repo.session.commit()
         await self.session_service.redis.delete(key)
         return True
@@ -365,8 +366,9 @@ class AuthService:
 
         try:
             email_service = await self.email_resolver.resolve(target_tenant)
-            dashboard_url = getattr(settings, "DASHBOARD_URL", None) or getattr(
-                settings, "APP_URL", "http://localhost:3000"
+            dashboard_url = str(
+                getattr(settings, "DASHBOARD_URL", None)
+                or getattr(settings, "APP_URL", "http://localhost:3000")
             )
             verify_link = f"{dashboard_url.rstrip('/')}/verify-email?token={token}"
 

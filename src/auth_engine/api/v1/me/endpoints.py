@@ -1,16 +1,15 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-
-from auth_engine.api.dependencies.auth_deps import get_current_active_user
-from auth_engine.models import UserORM
-from auth_engine.schemas.tenant import TenantResponse
-from auth_engine.schemas.user import UserResponse
-from auth_engine.schemas.user import UserUpdate
-from sqlalchemy.ext.asyncio import AsyncSession
-from auth_engine.api.dependencies.deps import get_db
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from auth_engine.api.dependencies.auth_deps import get_current_active_user
+from auth_engine.api.dependencies.deps import get_db
+from auth_engine.models import UserORM
+from auth_engine.schemas.tenant import TenantResponse
+from auth_engine.schemas.user import UserResponse, UserUpdate
 
 router = APIRouter()
 
@@ -80,6 +79,7 @@ async def get_my_tenant_permissions(
 
     return {"tenant_id": tenant_id, "permissions": list(permissions)}
 
+
 @router.put("", response_model=UserResponse)
 @router.put("/", response_model=UserResponse, include_in_schema=False)
 async def update_me(
@@ -103,7 +103,7 @@ async def update_me(
         detail = str(exc)
         if hasattr(exc, "orig"):
             detail = getattr(exc.orig, "detail", str(exc.orig))
-        
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,

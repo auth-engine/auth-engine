@@ -16,6 +16,7 @@ class UserStatus(str, Enum):
     INACTIVE = "INACTIVE"
     SUSPENDED = "SUSPENDED"
 
+
 class UserBase(BaseModel):
     email: EmailStr
     phone_number: str | None = None

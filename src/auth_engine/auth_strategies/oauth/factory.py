@@ -8,6 +8,7 @@ tenant_id is provided. Falls back to platform credentials from settings.
 Supported providers: google, github, microsoft, authengine
 """
 
+import logging
 import uuid
 
 from sqlalchemy import select
@@ -26,8 +27,8 @@ from auth_engine.core.exceptions import AuthenticationError
 from auth_engine.core.security import SecurityUtils
 from auth_engine.models.tenant_social_provider import TenantSocialProviderORM
 
-import logging
 logger = logging.getLogger(__name__)
+
 
 async def get_oauth_strategy(
     provider: str,
@@ -143,8 +144,6 @@ def _build_strategy(
     )
 
 
-
-
 def _build_platform_strategy(provider: str) -> BaseOAuthStrategy:
     """Build a strategy using platform-level credentials from settings."""
     logger.debug(f"Building platform strategy for: {provider}")
@@ -180,7 +179,11 @@ def _build_platform_strategy(provider: str) -> BaseOAuthStrategy:
         )
 
     if provider == AUTHENGINE_OIDC:
-        logger.debug(f"Configuring AuthEngine: ID={'set' if settings.AUTHENGINE_CLIENT_ID else 'empty'}, Secret={'set' if settings.AUTHENGINE_CLIENT_SECRET else 'empty'}, Base={settings.AUTHENGINE_BASE_URL}")
+        logger.debug(
+            f"Configuring AuthEngine: ID={'set' if settings.AUTHENGINE_CLIENT_ID else 'empty'}, "
+            f"Secret={'set' if settings.AUTHENGINE_CLIENT_SECRET else 'empty'}, "
+            f"Base={settings.AUTHENGINE_BASE_URL}"
+        )
         if not settings.AUTHENGINE_CLIENT_ID or not settings.AUTHENGINE_CLIENT_SECRET:
             raise AuthenticationError(
                 "AuthEngine OAuth is not configured. "

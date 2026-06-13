@@ -137,4 +137,4 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = Field(default=[], description="List of allowed origins for CORS")
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

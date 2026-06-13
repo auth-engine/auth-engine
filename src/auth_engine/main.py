@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from auth_engine.api.v1.oidc.discovery import well_known_router
 from auth_engine.api.v1.router import api_router
@@ -11,7 +12,6 @@ from auth_engine.core.config import settings
 from auth_engine.core.mongodb import close_mongo, init_mongo, mongo_db
 from auth_engine.core.postgres import init_db
 from auth_engine.core.redis import redis_client
-from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,

@@ -223,13 +223,17 @@ def _get_expected_origin() -> str:
 
     Prefers DASHBOARD_URL (the dashboard origin) and falls back to APP_URL.
     """
-    url = getattr(settings, "DASHBOARD_URL", None) or getattr(
-        settings, "APP_URL", "http://localhost:8000"
+    url_str = str(
+        getattr(settings, "DASHBOARD_URL", None)
+        or getattr(settings, "APP_URL", "http://localhost:8000")
     )
     from urllib.parse import urlparse
 
-    p = urlparse(url)
-    origin = f"{p.scheme}://{p.hostname}"
+    p = urlparse(url_str)
+    scheme = str(p.scheme)
+    hostname = str(p.hostname)
+
+    origin = f"{scheme}://{hostname}"
     if p.port and p.port not in (80, 443):
         origin += f":{p.port}"
     return origin

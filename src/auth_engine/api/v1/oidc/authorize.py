@@ -180,7 +180,6 @@ async def authorize_submit(
     """
     from auth_engine.api.dependencies.deps import get_db
     from auth_engine.core.security import security as crypto
-    from auth_engine.models.user import UserStatus
     from auth_engine.repositories.user_repo import UserRepository
 
     form = await request.form()
