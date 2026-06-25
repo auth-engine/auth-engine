@@ -96,25 +96,6 @@ async def get_current_active_user(current_user: UserORM = Depends(get_current_us
     return current_user
 
 
-async def get_current_active_superadmin(
-    current_user: UserORM = Depends(get_current_active_user),
-) -> UserORM:
-    """
-    Dependency to get the current active superuser.
-    """
-    is_super_admin = False
-    for user_role in current_user.roles:
-        if user_role.role.name == "SUPER_ADMIN":
-            is_super_admin = True
-            break
-
-    if not is_super_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="The user doesn't have enough privileges"
-        )
-    return current_user
-
-
 async def get_current_user_optional(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
     db: AsyncSession = Depends(get_db),

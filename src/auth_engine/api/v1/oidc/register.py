@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth_engine.api.dependencies.deps import get_db
+from auth_engine.api.dependencies.rbac import check_platform_permission
+from auth_engine.models import UserORM
 from auth_engine.models.oidc_client import OIDCClientORM
 from auth_engine.schemas.oidc_client import ClientRegistrationRequest, ClientRegistrationResponse
 
@@ -19,12 +21,14 @@ router = APIRouter()
     summary="Dynamic Client Registration",
     description=(
         "Implements RFC 7591 Dynamic Client Registration. "
-        "No initial access token required for testing (open registration)."
+        "Requires the platform.tenants.manage permission."
     ),
     tags=["oidc"],
 )
 async def register_client(
-    req: ClientRegistrationRequest, db: AsyncSession = Depends(get_db)
+    req: ClientRegistrationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserORM = Depends(check_platform_permission("platform.tenants.manage")),
 ) -> ClientRegistrationResponse:
     """
     Register a new OIDC client dynamically.
@@ -76,7 +80,11 @@ async def register_client(
     await db.commit()
     await db.refresh(client)
 
-    logger.info(f"[oidc/register] Registered new client: {client_id}")
+    logger.info(
+        "[oidc/register] Registered new client: %s by actor=%s",
+        client_id,
+        current_user.id,
+    )
 
     return ClientRegistrationResponse(
         client_id=client_id,
