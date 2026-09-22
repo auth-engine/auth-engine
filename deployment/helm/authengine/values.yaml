@@ -1,0 +1,112 @@
+# Default values for authengine Helm chart.
+# Override secrets and domains before production install.
+
+global:
+  domain: "authengine.org"
+  apiSubdomain: "api"
+  idpSubdomain: "auth"
+  dashboardSubdomain: "app"
+
+# Database passwords and app secrets — override via --set or a values override file.
+secrets:
+  postgresPassword: "change_me_strong_password"
+  mongoPassword: "change_me_strong_password"
+  redisPassword: "change_me_strong_password"
+  secretKey: "change_me_to_a_32_character_secret_key"
+  jwtSecretKey: "change_me_to_a_32_character_jwt_secret"
+  resendApiKey: ""
+
+# Super admin — seed Job creates platform tenant, roles, and auth config.
+seed:
+  enabled: true
+  # Set true on helm upgrade to create a new visible seed Job (idempotent).
+  runOnUpgrade: false
+  superadminEmail: "admin@example.com"
+  superadminPassword: "ChangeThisStrongPassword123!"
+  githubOrg: "auth-engine"
+
+api:
+  image:
+    repository: qniranjan01/authengine
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 8000
+  env:
+    APP_NAME: AuthEngine
+    APP_VERSION: "1.0.0"
+    APP_DESCRIPTION: AuthEngine IAM API
+    DEBUG: "false"
+    ENVIRONMENT: production
+    API_V1_PREFIX: /api/v1
+    ALGORITHM: HS256
+    ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+    REFRESH_TOKEN_EXPIRE_DAYS: "7"
+    POSTGRES_POOL_SIZE: "20"
+    POSTGRES_MAX_OVERFLOW: "10"
+    POSTGRES_SSL: "false"
+    MONGODB_DB_NAME: authengine
+    REDIS_DB: "0"
+    REDIS_MAX_CONNECTIONS: "50"
+    JWT_ALGORITHM: HS256
+    JWT_ISSUER: authengine
+    JWT_AUDIENCE: authengine-api
+    OIDC_PRIVATE_KEY_PATH: /app/oidc_private.pem
+    RATE_LIMIT_ENABLED: "true"
+    RATE_LIMIT_PER_MINUTE: "10"
+    MAX_CONCURRENT_SESSIONS: "5"
+    SESSION_TIMEOUT_MINUTES: "60"
+    AWS_REGION: ap-south-1
+    EMAIL_PROVIDER: resend
+
+dashboard:
+  image:
+    repository: qniranjan01/authengine-dashboard
+    tag: latest
+    pullPolicy: Always
+  replicas: 1
+  port: 3000
+  # Optional. Leave empty — login page resolves platform tenant from the API.
+  platformTenantId: ""
+
+postgres:
+  image:
+    repository: postgres
+    tag: 15-alpine
+  storage:
+    size: 20Gi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+
+mongodb:
+  image:
+    repository: mongo
+    tag: "7"
+  storage:
+    size: 10Gi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+
+redis:
+  image:
+    repository: redis
+    tag: alpine
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+
+ingress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: rancher-webhook-tls
+
+migrate:
+  enabled: true

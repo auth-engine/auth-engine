@@ -1,0 +1,44 @@
+{{- if and .Values.seed.enabled (or .Release.IsInstall .Values.seed.runOnUpgrade) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: authengine-seed-{{ .Release.Revision }}
+  labels:
+    app.kubernetes.io/name: authengine
+    app.kubernetes.io/component: seed
+  annotations:
+    # Keep completed seed Jobs visible in Rancher until manually deleted.
+    helm.sh/resource-policy: keep
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: authengine
+        app.kubernetes.io/component: seed
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: seed
+        image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+        imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+        command: ["auth-engine", "seed"]
+        envFrom:
+        - secretRef:
+            name: authengine-secrets
+        env:
+        {{- range $key, $value := .Values.api.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        - name: SUPERADMIN_EMAIL
+          value: {{ .Values.seed.superadminEmail | quote }}
+        - name: SUPERADMIN_PASSWORD
+          value: {{ .Values.seed.superadminPassword | quote }}
+        - name: EMAIL_PROVIDER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authengine-secrets
+              key: RESEND_API_KEY
+{{- end }}

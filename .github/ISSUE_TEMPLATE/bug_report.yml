@@ -13,9 +13,10 @@ body:
     attributes:
       label: Component
       options:
-        - auth-engine (API / backend)
-        - auth-engine-dashboard (admin UI)
-        - auth-engine-infra (compose / terraform / docs)
+        - apps/api
+        - data (seeding)
+        - apps/dashboard
+        - infra (compose / terraform)
         - Production deployment
         - Other
     validations:
@@ -36,7 +37,7 @@ body:
       label: Steps to reproduce
       description: Minimal steps to reproduce the behavior
       placeholder: |
-        1. docker compose up (auth-engine-infra/compose)
+        1. docker compose up -d
         2. Open http://localhost:3000/login
         3. ...
     validations:

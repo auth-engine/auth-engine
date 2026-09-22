@@ -1,0 +1,49 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authengine-ingress
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  tls:
+  - hosts:
+    - "{{ .Values.global.apiSubdomain }}.{{ .Values.global.domain }}"
+    - "{{ .Values.global.idpSubdomain }}.{{ .Values.global.domain }}"
+    - "{{ .Values.global.dashboardSubdomain }}.{{ .Values.global.domain }}"
+    secretName: authengine-tls
+  rules:
+  - host: "{{ .Values.global.apiSubdomain }}.{{ .Values.global.domain }}"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: {{ .Values.api.port }}
+  - host: "{{ .Values.global.idpSubdomain }}.{{ .Values.global.domain }}"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: {{ .Values.api.port }}
+  - host: "{{ .Values.global.dashboardSubdomain }}.{{ .Values.global.domain }}"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashboard-service
+            port:
+              number: {{ .Values.dashboard.port }}
+{{- end }}

@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: bash -c 'cd apps/api && uv run ruff check src'
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: bash -c 'cd apps/api && uv run ruff format src'
+        language: system
+        pass_filenames: false
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd apps/api && PYTHONPATH=src uv run mypy src'
+        language: system
+        pass_filenames: false
+        types: [python]
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: ^apps/api/alembic/|^apps/api/\.env\.example$|^apps/dashboard/\.env\.example$

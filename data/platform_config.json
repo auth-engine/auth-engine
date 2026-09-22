@@ -1,0 +1,13 @@
+{
+  "allowed_methods": ["email_password"],
+  "mfa_required": false,
+  "session_ttl_seconds": 3600,
+  "allowed_domains": [],
+  "password_policy": {
+    "min_length": 8,
+    "require_uppercase": true,
+    "require_lowercase": true,
+    "require_digit": true,
+    "require_special": true
+  }
+}

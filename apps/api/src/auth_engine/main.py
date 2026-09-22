@@ -1,0 +1,98 @@
+import logging
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
+from auth_engine.api.ui_router import ui_router
+from auth_engine.api.v1.oidc.discovery import well_known_router
+from auth_engine.api.v1.router import api_router
+from auth_engine.core import mongodb
+from auth_engine.core.config import settings
+from auth_engine.core.mongodb import close_mongo, init_mongo
+from auth_engine.core.postgres import check_db_connection
+from auth_engine.core.redis import redis_client
+
+logging.basicConfig(
+    level=logging.DEBUG if settings.DEBUG else logging.INFO,
+    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+# Silence noisy libraries
+logging.getLogger("pymongo").setLevel(logging.WARNING)
+logging.getLogger("motor").setLevel(logging.WARNING)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    logger.info("Starting up AuthEngine...")
+
+    await check_db_connection()
+    logger.info("postgres up for AuthEngine...")
+    await init_mongo()
+    logger.info("mongo up for AuthEngine...")
+    await redis_client.connect()
+    logger.info("redis up for AuthEngine...")
+
+    # NOTE: Roles/permissions and the super admin are not seeded on startup.
+    # After migrations, run `auth-engine seed` (loads JSON from repo data/).
+
+    # Initialize Audit Log Indexes
+    if mongodb.mongo_db is not None:
+        collection = mongodb.mongo_db["audit_logs"]
+        await collection.create_index("actor_id")
+        await collection.create_index("tenant_id")
+        await collection.create_index("created_at")
+        await collection.create_index([("tenant_id", 1), ("created_at", -1)])
+
+        leads = mongodb.mongo_db["contact_leads"]
+        await leads.create_index("created_at")
+        await leads.create_index("email")
+
+    yield
+
+    logger.info("Shutting down AuthEngine...")
+    await close_mongo()
+    await redis_client.disconnect()
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description=settings.APP_DESCRIPTION,
+    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+app.include_router(ui_router)
+
+# Mount static files
+BASE_DIR = Path(__file__).resolve().parent.parent
+app.mount("/static", StaticFiles(directory=BASE_DIR / "assest"), name="static")
+
+# # OIDC spec requires discovery at /.well-known/ — mounted at the app root (no API prefix)
+app.include_router(well_known_router, prefix="/.well-known", tags=["oidc"])
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "auth_engine.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+    )

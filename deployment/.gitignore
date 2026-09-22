@@ -1,0 +1,26 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+!terraform/terraform.tfvars.example
+.DS_Store
+
+# Generated deploy artifacts (terraform outputs cache)
+.terraform-outputs.json
+deploy/last-terraform-outputs.json
+
+# Local secrets / keys (never commit)
+deploy/*.pem
+
+# Downloaded installer binaries
+*.deb
+
+# Local values override (never commit)
+local-values.yaml

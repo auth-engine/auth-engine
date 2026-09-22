@@ -1,0 +1,38 @@
+name: auth-engine · Terraform Plan
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Terraform format, validate, and plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false
+        env:
+          TF_VAR_db_password: "plan-only-placeholder-32chars!!"
+        continue-on-error: true

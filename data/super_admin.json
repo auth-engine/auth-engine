@@ -1,0 +1,11 @@
+{
+  "email": "admin@example.com",
+  "username": "super_admin",
+  "first_name": "Super",
+  "last_name": "Admin",
+  "phone_number": "+91 9999999999",
+  "platform_tenant": {
+    "name": "Platform",
+    "description": "System platform tenant"
+  }
+}

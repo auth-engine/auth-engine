@@ -1,0 +1,136 @@
+{
+  "roles": [
+    {
+      "name": "SUPER_ADMIN",
+      "description": "Full platform control",
+      "scope": "PLATFORM",
+      "level": 100,
+      "is_template": false
+    },
+    {
+      "name": "PLATFORM_ADMIN",
+      "description": "Manage organizations",
+      "scope": "PLATFORM",
+      "level": 80,
+      "is_template": false
+    },
+    {
+      "name": "TENANT_OWNER",
+      "description": "Owner of organization",
+      "scope": "TENANT",
+      "level": 60,
+      "is_template": true
+    },
+    {
+      "name": "TENANT_ADMIN",
+      "description": "Admin inside tenant",
+      "scope": "TENANT",
+      "level": 50,
+      "is_template": true
+    },
+    {
+      "name": "TENANT_MANAGER",
+      "description": "Manager inside tenant",
+      "scope": "TENANT",
+      "level": 30,
+      "is_template": true
+    },
+    {
+      "name": "TENANT_USER",
+      "description": "Standard tenant user",
+      "scope": "TENANT",
+      "level": 10,
+      "is_template": true
+    }
+  ],
+  "permissions": [
+    { "name": "platform.users.view", "description": "View all users globally" },
+    { "name": "platform.users.manage", "description": "Manage all users globally" },
+    { "name": "platform.roles.assign", "description": "Assign platform-level roles" },
+    { "name": "platform.tenants.view", "description": "View all tenants globally" },
+    { "name": "platform.tenants.manage", "description": "Manage all tenants globally" },
+    { "name": "platform.audit.view", "description": "View all audit logs globally" },
+    { "name": "platform.leads.view", "description": "View marketing contact form leads" },
+    { "name": "tenant.view", "description": "View tenant details" },
+    { "name": "tenant.update", "description": "Update tenant details" },
+    { "name": "tenant.delete", "description": "Delete tenant" },
+    { "name": "tenant.users.view", "description": "View users in tenant" },
+    { "name": "tenant.users.manage", "description": "Manage users in tenant" },
+    { "name": "tenant.roles.view", "description": "View roles in tenant" },
+    { "name": "tenant.roles.assign", "description": "Assign roles in tenant" },
+    { "name": "tenant.roles.manage", "description": "Create and manage roles in tenant" },
+    { "name": "auth.tokens.request", "description": "Request authentication and verification tokens" },
+    { "name": "auth.password.reset", "description": "Initiate and perform password reset" },
+    { "name": "auth.email.verify", "description": "Perform email verification" },
+    { "name": "auth.phone.verify", "description": "Perform phone verification" },
+    { "name": "auth.tokens.refresh", "description": "Refresh authentication tokens" }
+  ],
+  "role_permissions": {
+    "SUPER_ADMIN": ["*"],
+    "PLATFORM_ADMIN": [
+      "platform.users.view",
+      "platform.tenants.view",
+      "platform.tenants.manage",
+      "platform.roles.assign",
+      "platform.audit.view",
+      "platform.leads.view",
+      "tenant.view",
+      "tenant.update",
+      "tenant.delete",
+      "tenant.users.view",
+      "auth.tokens.request",
+      "auth.password.reset",
+      "auth.email.verify",
+      "auth.phone.verify",
+      "auth.tokens.refresh"
+    ],
+    "TENANT_OWNER": [
+      "tenant.view",
+      "tenant.update",
+      "tenant.delete",
+      "tenant.users.view",
+      "tenant.users.manage",
+      "tenant.roles.view",
+      "tenant.roles.assign",
+      "tenant.roles.manage",
+      "auth.tokens.request",
+      "auth.password.reset",
+      "auth.email.verify",
+      "auth.phone.verify",
+      "auth.tokens.refresh"
+    ],
+    "TENANT_ADMIN": [
+      "tenant.view",
+      "tenant.update",
+      "tenant.users.view",
+      "tenant.users.manage",
+      "tenant.roles.view",
+      "tenant.roles.assign",
+      "tenant.roles.manage",
+      "auth.tokens.request",
+      "auth.password.reset",
+      "auth.email.verify",
+      "auth.phone.verify",
+      "auth.tokens.refresh"
+    ],
+    "TENANT_MANAGER": [
+      "tenant.view",
+      "tenant.users.view",
+      "tenant.roles.view",
+      "tenant.roles.assign",
+      "auth.tokens.request",
+      "auth.password.reset",
+      "auth.email.verify",
+      "auth.phone.verify",
+      "auth.tokens.refresh"
+    ],
+    "TENANT_USER": [
+      "tenant.view",
+      "auth.tokens.request",
+      "auth.password.reset",
+      "auth.email.verify",
+      "auth.phone.verify",
+      "auth.tokens.refresh"
+    ]
+  }
+}

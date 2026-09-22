@@ -1,0 +1,6 @@
+apiVersion: v2
+name: authengine
+description: A Helm chart for AuthEngine Identity Provider
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

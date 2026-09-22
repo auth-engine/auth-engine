@@ -1,0 +1,91 @@
+site_name: AuthEngine
+site_author: Niranjan Kumar
+
+# MkDocs project lives entirely under docs/. Pages are in pages/ (MkDocs
+# forbids docs_dir equal to the config directory, and site/ must sit beside it).
+docs_dir: pages
+site_dir: site
+
+site_description: AuthEngine platform documentation — deployment, architecture, API, and security
+site_url: https://docs.authengine.org
+repo_url: https://github.com/auth-engine/auth-engine
+repo_name: auth-engine
+edit_uri: edit/main/docs/pages/
+
+copyright: >
+  &copy; 2026
+  <a href="https://github.com/auth-engine" target="_blank" rel="noopener">AuthEngine</a>
+  · Niranjan Kumar
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+# Mandatory navigation — every page must be listed here (no auto-discovery)
+nav:
+  - Home: index.md
+  - Getting started:
+      - Quick Start: quick-start.md
+      - Deployment: deployment.md
+  - Platform:
+      - Architecture: architecture.md
+      - Security: security-overview.md
+  - Integration:
+      - API Reference: api-reference.md
+      - OAuth2 / OIDC: oauth2-oidc-guides.md
+  - Community:
+      - Contributing: contributing.md
+      - Security Policy: security-policy.md
+  - About:
+      - About: about-author.md
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  generator: false

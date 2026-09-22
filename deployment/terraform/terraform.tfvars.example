@@ -1,0 +1,10 @@
+aws_region        = "ap-south-1"
+project_name      = "authengine"
+environment       = "production"
+
+# Lab: t4g.large (2 vCPU, 8 GB). Production: t4g.xlarge (4 vCPU, 16 GB).
+ec2_instance_type = "t4g.xlarge"
+
+# Optional SSH (your public IP /32). Leave empty to use SSM only.
+allowed_ssh_cidr = ""
+ec2_key_name     = ""

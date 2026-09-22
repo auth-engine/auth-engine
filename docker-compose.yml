@@ -1,0 +1,222 @@
+# AuthEngine local demo. Values below are DEMO ONLY — not for production.
+#
+#   docker compose up -d
+#   docker compose ps          # wait until api + dashboard are healthy
+#   open http://localhost:3000
+#     email:    admin@example.com
+#     password: admin@123!
+#
+# API / Swagger: http://localhost:8000/docs
+#
+# Host API + dashboard (databases only):
+#   docker compose up -d postgres mongo redis
+#
+# Stop:            docker compose down
+# Stop + wipe DB:  docker compose down --volumes
+
+name: authengine
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+# Demo credentials (from .env.example)
+x-demo-db: &demo-db
+  POSTGRES_USER: authengine
+  POSTGRES_PASSWORD: authengine_local_pass
+  POSTGRES_DB: authengine
+
+x-api-env: &api-env
+  APP_NAME: AuthEngine
+  APP_VERSION: "1.0.0"
+  APP_DESCRIPTION: AuthEngine IAM API
+  DEBUG: "True"
+  API_V1_PREFIX: /api/v1
+  APP_URL: http://localhost:8000
+  SECRET_KEY: change-me-min-32-chars-random-secret-key
+  JWT_SECRET_KEY: change-me-min-32-chars-jwt-secret-key
+  ALGORITHM: HS256
+  JWT_ALGORITHM: HS256
+  JWT_ISSUER: authengine
+  JWT_AUDIENCE: authengine-api
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  POSTGRES_URL: postgresql+asyncpg://authengine:authengine_local_pass@postgres:5432/authengine
+  POSTGRES_POOL_SIZE: "20"
+  POSTGRES_MAX_OVERFLOW: "10"
+  POSTGRES_SSL: "False"
+  MONGODB_URL: mongodb://admin:admin_local_pass@mongo:27017/authengine?authSource=admin
+  MONGODB_DB_NAME: authengine
+  REDIS_URL: redis://default:redis_local_pass@redis:6379/0
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "50"
+  OIDC_PRIVATE_KEY_PATH: /app/oidc_private.pem
+  WEBAUTHN_RP_ID: localhost
+  CORS_ORIGINS: '["http://localhost:3000"]'
+  RATE_LIMIT_ENABLED: "True"
+  RATE_LIMIT_PER_MINUTE: "10"
+  MAX_CONCURRENT_SESSIONS: "5"
+  SESSION_TIMEOUT_MINUTES: "60"
+  AWS_REGION: ap-south-1
+  SUPERADMIN_EMAIL: admin@example.com
+  SUPERADMIN_PASSWORD: ChangeThisStrongPassword123!
+
+services:
+  migrate:
+    image: qniranjan01/authengine:latest
+    container_name: authengine-migrate
+    logging: *default-logging
+    environment:
+      <<: *api-env
+    command: ["sh", "-c", "auth-engine migrate && auth-engine seed"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: "no"
+    networks: [authengine-network]
+
+  api:
+    image: qniranjan01/authengine:latest
+    container_name: authengine-api
+    logging: *default-logging
+    ports:
+      - "8000:8000"
+    environment:
+      <<: *api-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres: { condition: service_healthy }
+      mongo: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks: [authengine-network]
+
+  dashboard:
+    image: qniranjan01/authengine-dashboard:latest
+    container_name: authengine-dashboard
+    logging: *default-logging
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_PLATFORM_TENANT_ID: ""
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks: [authengine-network]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: authengine-postgres
+    logging: *default-logging
+    ports:
+      - "5432:5432"
+    environment:
+      <<: *demo-db
+    volumes:
+      - authengine_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authengine -d authengine"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [authengine-network]
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: authengine-mongo
+    logging: *default-logging
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin_local_pass
+      MONGO_INITDB_DATABASE: authengine
+    volumes:
+      - authengine_mongo_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "admin",
+          "--password",
+          "admin_local_pass",
+          "--eval",
+          "db.adminCommand('ping')",
+          "--quiet",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [authengine-network]
+
+  redis:
+    image: redis:7-alpine
+    container_name: authengine-redis
+    logging: *default-logging
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --requirepass redis_local_pass
+      --user default on >>redis_local_pass ~* &* +@all
+      --appendonly yes
+    volumes:
+      - authengine_redis_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "-u",
+          "redis://default:redis_local_pass@localhost:6379/0",
+          "ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [authengine-network]
+
+volumes:
+  authengine_pg_data:
+    name: authengine_pg_data
+  authengine_mongo_data:
+    name: authengine_mongo_data
+  authengine_redis_data:
+    name: authengine_redis_data
+
+networks:
+  authengine-network:
+    name: authengine-network
+    driver: bridge
