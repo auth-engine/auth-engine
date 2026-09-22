@@ -97,7 +97,9 @@ async def seed_roles(db: AsyncSession) -> None:
 
     roles = {
         r.name: r
-        for r in (await db.execute(select(RoleORM).where(RoleORM.tenant_id.is_(None)))).scalars().all()
+        for r in (await db.execute(select(RoleORM).where(RoleORM.tenant_id.is_(None))))
+        .scalars()
+        .all()
     }
     perms = {p.name: p for p in (await db.execute(select(PermissionORM))).scalars().all()}
 

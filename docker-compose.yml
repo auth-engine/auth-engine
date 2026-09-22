@@ -49,7 +49,7 @@ x-api-env: &api-env
   POSTGRES_SSL: "False"
   MONGODB_URL: mongodb://admin:admin_local_pass@mongo:27017/authengine?authSource=admin
   MONGODB_DB_NAME: authengine
-  REDIS_URL: redis://default:redis_local_pass@redis:6379/0
+  REDIS_URL: redis://:redis_local_pass@redis:6379/0
   REDIS_DB: "0"
   REDIS_MAX_CONNECTIONS: "50"
   OIDC_PRIVATE_KEY_PATH: /app/oidc_private.pem
@@ -136,7 +136,7 @@ services:
     container_name: authengine-postgres
     logging: *default-logging
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       <<: *demo-db
     volumes:
@@ -186,11 +186,14 @@ services:
     logging: *default-logging
     ports:
       - "6379:6379"
-    command: >
-      redis-server
-      --requirepass redis_local_pass
-      --user default on >>redis_local_pass ~* &* +@all
-      --appendonly yes
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "redis_local_pass",
+        "--appendonly",
+        "yes",
+      ]
     volumes:
       - authengine_redis_data:/data
     healthcheck:
@@ -212,9 +215,9 @@ volumes:
   authengine_pg_data:
     name: authengine_pg_data
   authengine_mongo_data:
-    name: authengine_mongo_data
+    name: authengine_mongo7_data
   authengine_redis_data:
-    name: authengine_redis_data
+    name: authengine_redis7_data
 
 networks:
   authengine-network:

@@ -6,7 +6,10 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a bug. Please search [existing issues](https://github.com/auth-engine/auth-engine/issues) first.
+        Thanks for reporting a bug in this **open-source** project.
+
+        Please search [existing issues](https://github.com/auth-engine/auth-engine/issues) first.
+        Security issues: [security policy](https://docs.authengine.org/security-policy/) — do not file them here.
 
   - type: dropdown
     id: component
@@ -14,10 +17,12 @@ body:
       label: Component
       options:
         - apps/api
-        - data (seeding)
         - apps/dashboard
-        - infra (compose / terraform)
-        - Production deployment
+        - data (seed JSON)
+        - docker-compose.yml (local databases / stack)
+        - deployment (Helm / Terraform / scripts)
+        - docs
+        - CI / GitHub Actions
         - Other
     validations:
       required: true
@@ -26,8 +31,8 @@ body:
     id: description
     attributes:
       label: What happened?
-      description: Clear description of the bug
-      placeholder: When I log in with MFA enabled, the session redirects to /login in a loop...
+      description: Clear description of the unexpected behavior
+      placeholder: After a successful password login, POST /api/v1/auth/login returns 500 while creating the Redis session...
     validations:
       required: true
 
@@ -35,11 +40,12 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      description: Minimal steps to reproduce the behavior
+      description: Minimal steps. Prefer host API + Compose databases (see Quick Start).
       placeholder: |
-        1. docker compose up -d
-        2. Open http://localhost:3000/login
-        3. ...
+        1. docker compose up -d postgres mongo redis
+        2. cd apps/api && uv run auth-engine run --reload
+        3. POST /api/v1/auth/login with the seeded super admin
+        4. ...
     validations:
       required: true
 
@@ -47,6 +53,7 @@ body:
     id: expected
     attributes:
       label: Expected behavior
+      placeholder: Login returns 200 with access_token and a Redis session is created.
     validations:
       required: true
 
@@ -54,8 +61,13 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: OS, Docker version, browser, API image tag, or production host
-      placeholder: Ubuntu 24.04, Docker 27.x, auth-engine tag 1.0.0, local compose
+      description: OS, Docker, Python/Node, how you ran the stack (host-dev vs full Compose), image or git ref
+      placeholder: |
+        OS: Ubuntu 24.04
+        Docker: 27.x
+        Run: host API (uv) + compose postgres/mongo/redis
+        Git: main @ abc1234
+        Browser: Firefox 130 (if dashboard)
     validations:
       required: true
 
@@ -63,8 +75,7 @@ body:
     id: logs
     attributes:
       label: Logs or screenshots
-      description: Redact secrets, tokens, and passwords
-      placeholder: Paste relevant API logs or browser console output
+      description: Redact secrets, tokens, and passwords. Paste API traceback or browser console output.
 
   - type: checkboxes
     id: terms
@@ -73,5 +84,7 @@ body:
       options:
         - label: I have redacted secrets and personal data from this report
           required: true
-        - label: I read CONTRIBUTING.md and tested on main or latest release
+        - label: I searched existing issues and this is not a duplicate
+          required: true
+        - label: I followed [Quick Start](https://docs.authengine.org/quick-start/) (or describe why not)
           required: false

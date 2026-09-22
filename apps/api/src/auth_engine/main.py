@@ -82,9 +82,10 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 app.include_router(ui_router)
 
-# Mount static files
-BASE_DIR = Path(__file__).resolve().parent.parent
-app.mount("/static", StaticFiles(directory=BASE_DIR / "assest"), name="static")
+# Mount static files (OIDC templates load /static/squarelogo.png)
+static_dir = Path(__file__).resolve().parent.parent / "assets"
+static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # # OIDC spec requires discovery at /.well-known/ — mounted at the app root (no API prefix)
 app.include_router(well_known_router, prefix="/.well-known", tags=["oidc"])

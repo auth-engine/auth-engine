@@ -2,7 +2,13 @@ blank_issues_enabled: false
 contact_links:
   - name: Documentation
     url: https://docs.authengine.org
-    about: Guides for quick start, deployment, API, and OAuth/OIDC
+    about: Quick start, architecture, API, OAuth/OIDC, and contributing
+  - name: Local development
+    url: https://docs.authengine.org/quick-start/
+    about: Run databases in Docker and the API / dashboard on your machine
+  - name: Discussions
+    url: https://github.com/auth-engine/auth-engine/discussions
+    about: Design talk and show-and-tell — not for bugs
   - name: Security report
     url: https://docs.authengine.org/security-policy/
     about: Report vulnerabilities privately — do not open a public issue

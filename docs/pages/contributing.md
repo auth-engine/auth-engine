@@ -6,9 +6,9 @@ author: Niranjan
 
 # Contributing
 
-Thank you for your interest in AuthEngine. This guide applies to all repositories in the [auth-engine](https://github.com/auth-engine) organization.
+Thank you for contributing to AuthEngine, an **open-source** (MIT) identity platform. This guide applies to the [auth-engine](https://github.com/auth-engine) organization.
 
-**Tagline:** One identity for every app and organisation.
+ Open-source identity for every app and organisation.
 
 !!! tip "New contributor?"
     Start with [Quick Start](quick-start.md), then open a [good first issue](https://github.com/auth-engine/auth-engine/issues?q=label%3A%22good+first+issue%22) when available.
@@ -22,7 +22,7 @@ Thank you for your interest in AuthEngine. This guide applies to all repositorie
 | [`apps/api`](https://github.com/auth-engine/auth-engine/tree/main/apps/api) | FastAPI API, IAM, OIDC, migrations |
 | [`apps/dashboard`](https://github.com/auth-engine/auth-engine/tree/main/apps/dashboard) | Next.js admin UI |
 | [`data/`](https://github.com/auth-engine/auth-engine/tree/main/data) | JSON seed data — roles, super admin profile, platform config |
-| [`infra/`](https://github.com/auth-engine/auth-engine/tree/main/infra) | Terraform, Helm, Docker Compose, deploy scripts |
+| [`deployment/`](https://github.com/auth-engine/auth-engine/tree/main/deployment) | Helm, Terraform, deploy scripts |
 | [`docs/`](https://github.com/auth-engine/auth-engine/tree/main/docs) | **This documentation** (MkDocs) |
 | [`.github` org](https://github.com/auth-engine/.github) | Org profile, CONTRIBUTING, SECURITY |
 
@@ -41,45 +41,51 @@ Canonical copy on GitHub: [CONTRIBUTING.md](https://github.com/auth-engine/.gith
 
 ## Local development
 
-### Full stack (recommended)
+Prefer **Compose databases + apps on the host** so you get hot reload. Full details: [Quick Start](quick-start.md).
+
+### Databases
 
 ```bash
 git clone https://github.com/auth-engine/auth-engine.git
-cd auth-engine/infra/compose
-cp env.local.example .env
-# Set SECRET_KEY and JWT_SECRET_KEY (openssl rand -hex 32)
-
-docker compose up -d
-docker exec authengine-api auth-engine migrate
+cd auth-engine
+docker compose up -d postgres mongo redis
 ```
 
-Then seed once with `auth-engine seed` (see [Quick Start — seed](quick-start.md#4-run-migrations--seed-data)).
+### API
+
+Python **3.12+**, [uv](https://docs.astral.sh/uv/).
+
+```bash
+cd apps/api
+uv sync --extra dev
+cp .env.example .env.local
+openssl genrsa -out oidc_private.pem 2048
+uv run auth-engine migrate
+uv run auth-engine seed
+uv run auth-engine run --reload
+```
 
 | Service | URL |
 |---------|-----|
 | API / Swagger | [http://localhost:8000/docs](http://localhost:8000/docs) |
 | Dashboard | [http://localhost:3000](http://localhost:3000) |
 
-### API only
+### Dashboard
 
 ```bash
-git clone https://github.com/auth-engine/auth-engine.git
-cd auth-engine/apps/api
-uv sync
-cp .env.example .env.local
-uv run auth-engine migrate
-uv run auth-engine run
-```
-
-Requires Python **3.12+**, [uv](https://docs.astral.sh/uv/), and Postgres, Redis, and MongoDB (or use Compose above).
-
-### Dashboard only
-
-```bash
-cd auth-engine/apps/dashboard
+cd apps/dashboard
 cp .env.example .env.local
 npm ci && npm run dev
 ```
+
+### Checks
+
+```bash
+cd apps/api && uv run ruff check src && uv run ruff format src && uv run mypy src
+cd apps/dashboard && npm run lint && npm run build
+```
+
+CI is [`.github/workflows/ci.yml`](https://github.com/auth-engine/auth-engine/blob/main/.github/workflows/ci.yml). Image publish is [`.github/workflows/build-push.yml`](https://github.com/auth-engine/auth-engine/blob/main/.github/workflows/build-push.yml).
 
 ---
 
@@ -88,8 +94,8 @@ npm ci && npm run dev
 1. **Fork** the repository and branch from `main` (`feature/…`, `fix/…`, `docs/…`).
 2. **Keep PRs focused** — one logical change when possible.
 3. **Test locally:**
-   - API: CI lint/typecheck; run migrations if models changed.
-   - Dashboard: `npm run build` must pass.
+   - API: lint/typecheck; run migrations if models changed.
+   - Dashboard: `npm run lint` and `npm run build` must pass.
    - Docs: verify links if you edited `docs/`.
 4. **Describe the PR** — what, why, how tested, `Fixes #123`.
 5. Open against **`main`**.

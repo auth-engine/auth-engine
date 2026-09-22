@@ -1,108 +1,83 @@
 ---
 title: Quick Start
-description: Run AuthEngine locally — API, frontend, Postgres, MongoDB, and Redis via Docker Compose.
+description: Run AuthEngine locally — databases in Docker, API and dashboard on the host, or the full Compose stack.
 author: Niranjan
 ---
 
 # Quick Start
 
-Two ways to develop locally:
+AuthEngine is **open source** (MIT). Two ways to run it on your machine:
 
 | Path | Best for |
 |------|----------|
-| **Docker Compose** (below) | Full stack with one command — API, dashboard, Postgres, MongoDB, Redis |
-| **Repos on host** ([§7](#7-run-without-docker-alternative)) | Backend or dashboard changes with hot reload |
+| **Databases in Docker, apps on the host** | Changing API or dashboard code (hot reload) |
+| **Full Docker Compose** | Trying published images with one command |
 
-Compose lives in **`infra/compose/`**.
+Compose is the **repository-root** [`docker-compose.yml`](https://github.com/auth-engine/auth-engine/blob/main/docker-compose.yml) — not a nested `infra/compose/` folder.
 
-!!! abstract "Compose steps"
-    **1** Configure `.env` → **2** `docker compose up -d` → **3** Migrate → **4** Seed → **5** Smoke test
+!!! abstract "Host-dev steps"
+    **1** Start Postgres, Mongo, Redis → **2** Configure `apps/api/.env.local` → **3** Migrate & seed → **4** Run API → **5** Run dashboard
 
 ---
 
-## 1. Prerequisites
+## Prerequisites
 
 | Requirement | Notes |
 |-------------|-------|
-| Docker + Docker Compose | Required |
-| OpenSSL | Optional — `openssl rand -hex 32` for secrets |
+| Docker + Compose v2 | Databases (and optional full stack) |
+| Python **3.12+** and [uv](https://docs.astral.sh/uv/) | Host API |
+| Node.js **20+** | Host dashboard |
+| OpenSSL | Local secrets and the OIDC RSA key |
+
+```bash
+git clone https://github.com/auth-engine/auth-engine.git
+cd auth-engine
+```
 
 ---
 
-## 2. Configure environment
+## Path A — local development (recommended)
+
+### 1. Start databases
 
 ```bash
-cd infra/compose
-cp env.local.example .env
+docker compose up -d postgres mongo redis
 ```
 
-Set `SECRET_KEY` and `JWT_SECRET_KEY` to unique 32+ character values (`openssl rand -hex 32`). Defaults in `env.local.example` are for local use only.
+| Service | Default host port |
+|---------|-------------------|
+| PostgreSQL | `5432` |
+| MongoDB | `27017` |
+| Redis | `6379` |
 
-The compose `.env` holds **credentials and app settings** — database URLs are assembled by `docker-compose.yml` for the API container. Dashboard `NEXT_PUBLIC_*` vars are also set here.
+If a port is already in use (system Postgres on `5432` is common), change only the **left** side of the Compose port mapping (for example `"5434:5432"`) and point `apps/api/.env.local` at that host port.
 
----
-
-## 3. Start the stack
-
-```bash
-docker compose up -d
-```
-
-| Service | URL |
-|---------|-----|
-| API | [http://localhost:8000](http://localhost:8000) |
-| Swagger | [http://localhost:8000/docs](http://localhost:8000/docs) |
-| Frontend | [http://localhost:3000](http://localhost:3000) |
-
-Images are pulled from Docker Hub (`qniranjan01/authengine`, `qniranjan01/authengine-dashboard`) as defined in `docker-compose.yml`.
-
----
-
-## 4. Run migrations & seed data
-
-```bash
-docker exec authengine-api auth-engine migrate
-```
-
-RBAC roles, the super admin, and optional platform-tenant config (email, SMS, social OAuth, password policy) are **not** seeded on API startup. Seed JSON lives in [`data/`](https://github.com/auth-engine/auth-engine/tree/main/data). After migrations, run:
+### 2. API
 
 ```bash
 cd apps/api
-uv run auth-engine seed
-```
-
-`SUPERADMIN_PASSWORD` (and optional email/SMS/OAuth secrets) come from `apps/api/.env.local`. Role lists and the super admin profile are in `data/*.json`.
-
----
-
-## 5. Smoke test
-
-1. Call `GET /api/v1/health` in Swagger.
-2. Confirm auth config: `GET /api/v1/auth/auth-config` — returns `tenant_id` and `allowed_methods` (no `tenant_id` query needed for platform login).
-3. Log in at [http://localhost:3000/login](http://localhost:3000/login) with super admin credentials (`SUPERADMIN_*` from compose `.env` or `apps/api/.env.local`).
-4. Platform routes (`/platform/*`) need a platform-scoped role; tenant routes need a tenant selected in the dashboard.
-
----
-
-## 6. OAuth providers (optional)
-
-Platform social login (Google, AuthEngine OIDC) is configured on the **platform tenant** — seed once with `auth-engine seed platform-config` (see `apps/api/.env.example`) or set providers in the dashboard. Per-tenant OAuth is managed in the dashboard under tenant settings.
-
----
-
-## 7. Run without Docker (alternative)
-
-**API** — `apps/api` in this repo (Postgres, MongoDB, Redis running — use root `docker compose up -d` or install locally):
-
-```bash
-cd apps/api
-uv sync
+uv sync --extra dev
 cp .env.example .env.local
-uv run auth-engine migrate
-uv run auth-engine run
+openssl genrsa -out oidc_private.pem 2048
 ```
 
-**Dashboard** — `apps/dashboard`:
+Set `SECRET_KEY` and `JWT_SECRET_KEY` to unique 32+ character values (`openssl rand -hex 32`).
+
+Redis should use a password-only URL when the container uses `--requirepass`:
+
+```env
+REDIS_URL=redis://:redis_local_pass@localhost:6379/0
+```
+
+```bash
+uv run auth-engine migrate
+uv run auth-engine seed
+uv run auth-engine run --reload
+```
+
+Seed is **not** run on API startup. `SUPERADMIN_*` live in `.env.local`; roles and the super-admin profile are in [`data/`](https://github.com/auth-engine/auth-engine/tree/main/data).
+
+### 3. Dashboard
 
 ```bash
 cd apps/dashboard
@@ -110,7 +85,54 @@ cp .env.example .env.local
 npm ci && npm run dev
 ```
 
-`NEXT_PUBLIC_PLATFORM_TENANT_ID` can stay empty — the login page calls `GET /auth/auth-config` and uses the returned `tenant_id`.
+`NEXT_PUBLIC_PLATFORM_TENANT_ID` can stay empty — login calls `GET /auth/auth-config` and uses the returned `tenant_id`.
+
+### 4. Smoke test
+
+| Service | URL |
+|---------|-----|
+| API | [http://localhost:8000](http://localhost:8000) |
+| Swagger | [http://localhost:8000/docs](http://localhost:8000/docs) |
+| Health | [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health) |
+| Dashboard | [http://localhost:3000](http://localhost:3000) |
+
+1. Confirm `GET /api/v1/health` and `GET /api/v1/auth/auth-config`.
+2. Log in at [http://localhost:3000/login](http://localhost:3000/login) with `SUPERADMIN_*`.
+3. Platform routes (`/platform/*`) need a platform-scoped role; tenant routes need a tenant selected in the dashboard.
+
+---
+
+## Path B — full Compose (published images)
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+The `migrate` service runs `auth-engine migrate && auth-engine seed` before the API becomes healthy. Images: `qniranjan01/authengine`, `qniranjan01/authengine-dashboard`.
+
+Do not also bind a host API to `:8000` while this stack is up.
+
+---
+
+## OAuth providers (optional)
+
+Platform social login is configured on the **platform tenant** — seed with `auth-engine seed platform-config` (see `apps/api/.env.example`) or set providers in the dashboard. Per-tenant OAuth is under tenant settings.
+
+---
+
+## CLI
+
+```bash
+cd apps/api
+uv run auth-engine run --reload
+uv run auth-engine migrate
+uv run auth-engine makemigration "message"
+uv run auth-engine seed                 # all
+uv run auth-engine seed roles
+uv run auth-engine seed superadmin
+uv run auth-engine seed platform-config
+```
 
 ---
 
@@ -119,6 +141,7 @@ npm ci && npm run dev
 | Step | Guide |
 |------|-------|
 | Understand the system | [Architecture](architecture.md) |
-| Deploy to production | [Deployment](deployment.md) |
+| Deploy | [Deployment](deployment.md) |
 | OAuth / OIDC integration | [OAuth2 / OIDC Guides](oauth2-oidc-guides.md) |
 | REST endpoints | [API Reference](api-reference.md) |
+| Contribute | [Contributing](contributing.md) |

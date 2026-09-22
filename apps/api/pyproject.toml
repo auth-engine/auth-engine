@@ -63,7 +63,6 @@ where = ["src"]
 
 [project.optional-dependencies]
 dev = [
-    "detect-secrets==1.4.0",
     "mypy==1.10.0",
     "pre-commit>=4.0.0",
     "ruff==0.4.4",

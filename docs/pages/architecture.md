@@ -57,7 +57,8 @@ flowchart TB
 | API service | `apps/api` | Auth, RBAC, OIDC, tenant config, introspection |
 | Dashboard | `apps/dashboard` | Platform/tenant admin UI, user self-service |
 | Seed data | `data/` | Roles, super admin profile, platform tenant auth config (JSON; applied by `auth-engine seed`) |
-| Infrastructure | `infra/` | Terraform (EC2), Helm chart (K3s), Compose (local dev), deploy scripts |
+| Infrastructure | `deployment/` | Helm (K3s), Terraform (EC2), deploy scripts |
+| Local Compose | `docker-compose.yml` | Postgres, MongoDB, Redis (and optional API/dashboard images) |
 
 ## 3. Backend internal architecture
 

@@ -6,7 +6,7 @@ author: Niranjan
 
 # Deployment Guide
 
-AuthEngine production runs on a **single-node K3s cluster** with **Rancher**, **cert-manager**, and the **Helm chart** in `infra/helm/authengine`. Postgres, MongoDB, Redis, the API, and the dashboard are in-cluster workloads.
+AuthEngine on a **single-node K3s cluster** with **Rancher**, **cert-manager**, and the **Helm chart** in `deployment/helm/authengine`. Postgres, MongoDB, Redis, the API, and the dashboard are in-cluster workloads.
 
 Choose one path:
 
@@ -17,7 +17,7 @@ Choose one path:
 
 !!! abstract "Quick start scripts"
     ```bash
-    cd infra
+    cd deployment
 
     # Laptop lab (Multipass + Cloudflare Tunnel)
     ./scripts/deploy-local-vm.sh all
@@ -26,7 +26,7 @@ Choose one path:
     ./scripts/deploy-aws.sh all
     ```
 
-    See [`infra/scripts/README.md`](https://github.com/auth-engine/auth-engine/blob/main/infra/scripts/README.md).
+    See [`deployment/scripts/README.md`](https://github.com/auth-engine/auth-engine/blob/main/deployment/scripts/README.md).
 
 ---
 
@@ -42,7 +42,7 @@ Single-node K3s + Rancher + AuthEngine (API, dashboard, Postgres, MongoDB, Redis
 
 - **Architecture:** ARM64 (AWS Graviton `t4g`) and x86_64 both work.
 - **Network:** ports **80** and **443** open on the VM firewall (cloud path only).
-- **Local dev** without Kubernetes: use Docker Compose in `infra/compose/` — see [Quick Start](quick-start.md).
+- **Local dev** without Kubernetes: use the root `docker-compose.yml` — see [Quick Start](quick-start.md).
 
 ```bash
 ./scripts/deploy-aws.sh specs      # cloud
@@ -220,7 +220,7 @@ cloudflared tunnel route dns authengine app.<your-domain>
 cloudflared tunnel route dns authengine rancher.<your-domain>
 ```
 
-Config template: `infra/scripts/templates/cloudflared-config.yml.tpl` — point all hostnames to `http://127.0.0.1:80` (K3s Traefik). TLS terminates at Cloudflare.
+Config template: `deployment/scripts/templates/cloudflared-config.yml.tpl` — point all hostnames to `http://127.0.0.1:80` (K3s Traefik). TLS terminates at Cloudflare.
 
 ```bash
 sudo cloudflared --config /etc/cloudflared/config.yml tunnel run

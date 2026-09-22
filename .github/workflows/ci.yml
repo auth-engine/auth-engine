@@ -1,5 +1,5 @@
-# Pipeline: merge to main → 0-ci → 1-build-push (Docker Hub). Redeploy in Rancher manually.
-name: auth-engine · Lint and Typecheck
+# Pipeline: merge to main → CI → build & push images (Docker Hub). Redeploy in Rancher manually.
+name: auth-engine · CI
 
 on:
   pull_request:
@@ -76,4 +76,3 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: https://api.authengine.org/api/v1
           NEXT_PUBLIC_APP_URL: https://app.authengine.org
-

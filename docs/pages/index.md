@@ -1,15 +1,15 @@
 ---
 title: Home
-description: AuthEngine — central identity for multiple apps and organizations. Start here.
+description: AuthEngine — open-source identity for multiple apps and organizations. Start here.
 ---
 
 # AuthEngine
 
-**One identity platform for all your apps and organizations.**
+<p class="hero-tagline">Sign in once. Every app, API, and organisation trusts the same identity.</p>
 
-AuthEngine is the shared front door for your software ecosystem. People sign in once. Your CRM, APIs, dashboards, and partner apps all trust the same identity — who the user is, which organization they belong to, and what they are allowed to do.
+<p class="hero-sub">Open-source IAM · OpenID Connect provider · tenant-scoped permissions · token introspection</p>
 
-Built for operators who run **more than one application** or **more than one customer organization** and need login, permissions, and audit to stay in one place.
+Stop copying login into every product. AuthEngine is the **open-source, self-hosted** identity layer they share: one user, many tenants, permission strings on every route, and backends that validate a session **without** holding the signing secret.
 
 [Read the full story →](about-author.md)
 
@@ -17,7 +17,9 @@ Built for operators who run **more than one application** or **more than one cus
 
 ## Why central identity?
 
-When every service builds its own login, permissions drift, secrets spread, and users juggle separate accounts. AuthEngine replaces that with **one system of record** for users, sessions, roles, and policies.
+Login libraries and enterprise IdPs already exist. Most of them **sign a user into one app**, or they stop at SSO and tokens. Teams still ship **N copies** of identity: another users table, another `is_admin` check, another copy of the JWT secret — so logout cannot kill a session and “admin” means something different in every service.
+
+AuthEngine is that layer **once**: who the user is, which organisation they are in, and which **permission strings** they hold. Apps use OpenID Connect. APIs call introspection with a hashed service key — they never receive `JWT_SECRET_KEY`. Use a library for a single app; use a large IdP when you need SAML, LDAP, and a long production history; use AuthEngine when several products must share the same identity.
 
 ```mermaid
 flowchart LR
@@ -65,7 +67,7 @@ Follow this order based on your goal:
 |:----:|-------|--------------|
 | **1** | [Quick Start](quick-start.md) | First time — run the stack locally |
 | **2** | [Architecture](architecture.md) | Understand components and data flow |
-| **3** | [Deployment](deployment.md) | Ship to production (cloud VM or local VM + Cloudflare) |
+| **3** | [Deployment](deployment.md) | Ship to a VM (cloud or laptop + Cloudflare) |
 | **4** | [Security Overview](security-overview.md) | Harden tokens, sessions, and access |
 | **5** | [API Reference](api-reference.md) | Integrate with REST endpoints |
 | **6** | [OAuth2 / OIDC](oauth2-oidc-guides.md) | Social login or use AuthEngine as an IdP |
@@ -80,7 +82,9 @@ Follow this order based on your goal:
 
 ---
 
-## Production URLs
+## Live sites
+
+Public demo hosts (not a production-readiness claim):
 
 | Host | Role |
 |------|------|
@@ -99,10 +103,11 @@ Follow this order based on your goal:
 | Folder | Purpose |
 |--------|---------|
 | [`apps/api`](https://github.com/auth-engine/auth-engine/tree/main/apps/api) | FastAPI IAM API |
-| [`data/`](https://github.com/auth-engine/auth-engine/tree/main/data) | JSON seed data |
 | [`apps/dashboard`](https://github.com/auth-engine/auth-engine/tree/main/apps/dashboard) | Admin dashboard |
-| [`infra/`](https://github.com/auth-engine/auth-engine/tree/main/infra) | Terraform, Helm, Compose, deploy scripts |
+| [`data/`](https://github.com/auth-engine/auth-engine/tree/main/data) | JSON seed data |
+| [`deployment/`](https://github.com/auth-engine/auth-engine/tree/main/deployment) | Helm, Terraform, deploy scripts |
 | [`docs/`](https://github.com/auth-engine/auth-engine/tree/main/docs) | This documentation site |
+| [`docker-compose.yml`](https://github.com/auth-engine/auth-engine/blob/main/docker-compose.yml) | Local databases and full stack |
 
 **Contributing:** [contributing.md](contributing.md) · **Security reports:** [security-policy.md](security-policy.md)
 

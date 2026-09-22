@@ -13,6 +13,7 @@ class RedisClient:
 
     async def connect(self) -> None:
         url = str(settings.REDIS_URL)
+        logger.info("Connecting to Redis...")
 
         self.client = aioredis.from_url(
             url,
@@ -28,6 +29,7 @@ class RedisClient:
             ],
             health_check_interval=30,
         )
+        await self.client.ping()
 
     async def disconnect(self) -> None:
         if self.client:

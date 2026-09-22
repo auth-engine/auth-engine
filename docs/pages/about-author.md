@@ -62,7 +62,19 @@ Each tenant can set its own rules:
 
 You run the platform; each organization controls **how their people sign in**.
 
-### 2.5 Governance built in
+### 2.5 Why this, not another open-source provider?
+
+Login libraries solve sign-in for **one** application. Full IdPs solve SSO and tokens. Both leave teams assembling the rest: a shared user across organisations, permission strings on every route, and backends that can revoke a session **without** holding the signing secret.
+
+| If you need… | Use… |
+|--------------|------|
+| Sign-in inside **one** app | A login library |
+| A large enterprise IdP (SAML, LDAP, long production history) | Keycloak, Authentik, Zitadel, Ory, and similar |
+| Several products that trust the **same person**, the **same organisation**, and the **same permission strings** | **AuthEngine** |
+
+AuthEngine ships that combination as the product: multi-tenant membership, permission-based access control, service-key introspection, AuthEngine as an OpenID Connect **provider**, and per-tenant login policy.
+
+### 2.6 Governance built in
 
 Platform operators onboard tenants, issue keys for trusted services, and review global audit history. Tenant admins invite users, assign roles, and configure login policy. Security-relevant events — logins, invites, tenant changes, logouts — are recorded for review.
 

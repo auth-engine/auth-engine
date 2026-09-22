@@ -1,3 +1,7 @@
-# Local Compose / OIDC key (see .env.example)
+# Local environment — never commit real values. Keep .env.example tracked.
 .env
-oidc_private.pem
+.env.*
+!.env.example
+
+# Private keys (OIDC signing, TLS)
+*.pem

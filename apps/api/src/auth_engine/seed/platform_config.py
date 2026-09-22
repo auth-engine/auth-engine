@@ -124,7 +124,11 @@ async def _seed_sms(
     if existing.scalar_one_or_none():
         return
 
-    if not settings.SMS_GATEWAY_URL or not settings.SMS_GATEWAY_USERNAME or not settings.SMS_GATEWAY_PASSWORD:
+    if (
+        not settings.SMS_GATEWAY_URL
+        or not settings.SMS_GATEWAY_USERNAME
+        or not settings.SMS_GATEWAY_PASSWORD
+    ):
         logger.info("SMS env not set — skipping platform SMS seed")
         return
 

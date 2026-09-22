@@ -24,3 +24,4 @@ deploy/*.pem
 
 # Local values override (never commit)
 local-values.yaml
+prod-values.yaml

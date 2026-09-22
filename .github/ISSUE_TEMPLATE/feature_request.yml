@@ -1,12 +1,14 @@
 name: Feature request
-description: Suggest an idea or improvement
+description: Suggest an idea or improvement for this open-source project
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        Describe the problem you want solved. Feature requests help shape the roadmap.
+        Describe the problem you want solved. Feature requests help shape the AuthEngine roadmap.
+
+        Search [existing issues](https://github.com/auth-engine/auth-engine/issues) first. Large ideas belong in an issue before a PR — see [Contributing](https://docs.authengine.org/contributing/).
 
   - type: dropdown
     id: component
@@ -14,10 +16,12 @@ body:
       label: Component
       options:
         - apps/api
-        - data (seeding)
         - apps/dashboard
-        - infra (compose / terraform)
-        - Documentation
+        - data (seed JSON)
+        - docker-compose.yml (local databases / stack)
+        - deployment (Helm / Terraform / scripts)
+        - docs
+        - CI / GitHub Actions
         - Other
     validations:
       required: true
@@ -36,6 +40,7 @@ body:
     attributes:
       label: Proposed solution
       description: How would you like it to work?
+      placeholder: Add GET /api/v1/tenants/{id}/audit-logs/export that returns CSV for a date range...
     validations:
       required: true
 
@@ -43,7 +48,7 @@ body:
     id: alternatives
     attributes:
       label: Alternatives considered
-      description: Other approaches you thought about
+      description: Other approaches you thought about (including “do nothing”)
 
   - type: dropdown
     id: contribution
