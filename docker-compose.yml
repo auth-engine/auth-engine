@@ -8,6 +8,7 @@
 #
 # API / Swagger: http://localhost:8000/docs
 #
+# Images: pull from Docker Hub if missing locally, otherwise use local, otherwise build.
 # Host API + dashboard (databases only):
 #   docker compose up -d postgres mongo redis
 #
@@ -63,9 +64,16 @@ x-api-env: &api-env
   SUPERADMIN_EMAIL: admin@example.com
   SUPERADMIN_PASSWORD: ChangeThisStrongPassword123!
 
+x-api-image: &api-image
+  image: qniranjan01/authengine:latest
+  pull_policy: missing
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+
 services:
   migrate:
-    image: qniranjan01/authengine:latest
+    <<: *api-image
     container_name: authengine-migrate
     logging: *default-logging
     environment:
@@ -79,7 +87,7 @@ services:
     networks: [authengine-network]
 
   api:
-    image: qniranjan01/authengine:latest
+    <<: *api-image
     container_name: authengine-api
     logging: *default-logging
     ports:
@@ -109,6 +117,13 @@ services:
 
   dashboard:
     image: qniranjan01/authengine-dashboard:latest
+    pull_policy: missing
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_APP_URL: http://localhost:3000
     container_name: authengine-dashboard
     logging: *default-logging
     ports:
