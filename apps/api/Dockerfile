@@ -7,7 +7,10 @@ ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 RUN pip install uv --no-cache-dir
 
 COPY apps/api/pyproject.toml apps/api/uv.lock ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY apps/api/src/ ./src/
+RUN uv sync --frozen --no-dev --no-editable
 
 
 FROM python:3.12-slim-bookworm AS runtime
